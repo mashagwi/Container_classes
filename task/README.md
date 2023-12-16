@@ -19,7 +19,7 @@ The russian version of the task can be found in the repository.
 
 ## Chapter I
 
-![s21_containers](misc/images/s21_containers.png)
+![s21_containers](images/s21_containers.png)
 
 Planet Earth, USA, California, somewhere among the massive containers of the Port of Oakland, 29 October 1993.
 

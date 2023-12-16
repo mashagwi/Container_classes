@@ -17,7 +17,7 @@
 
 ## Chapter I
 
-![s21_containers](misc/images/s21_containers.png)
+![s21_containers](images/s21_containers.png)
 
 Планета Земля, США, штат Калифорния, где-то среди массивных контейнеров порта Окленда, 29 октября 1993 года.
 
