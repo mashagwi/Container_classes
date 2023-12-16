@@ -4,5 +4,6 @@
     ".clang-tidy": "yaml",
     ".clang-format": "yaml",
   },
-  "C_Cpp.codeAnalysis.clangTidy.enabled": true
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+  "editor.formatOnSave": true
 }
