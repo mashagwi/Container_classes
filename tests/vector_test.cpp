@@ -1,6 +1,9 @@
 #include "gtest/gtest.h"
 #include "s21_containers/s21_vector.h"
 
+// explicit template class instantiation for the needs of code coverage
+template class s21::vector<int>;
+
 TEST(constructor, default_) {
   const int sz = 0;
   s21::vector<int> v;
