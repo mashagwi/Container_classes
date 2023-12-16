@@ -27,5 +27,5 @@ Checks: >
   -cert-err58-cpp,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-avoid-non-const-global-variables
-HeaderFilterRegex: ''
+HeaderFilterRegex: '^s21.*'
 ...
