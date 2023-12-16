@@ -15,7 +15,7 @@ configure:
 
 debug:   BUILD_TYPE = Debug
 release: BUILD_TYPE = Release
-build release debug s21_matrix_oop.a: configure	
+build release debug: configure	
 	cmake --build $(BUILD_DIR) --parallel 8 -- --output-sync
 .PHONY: build release debug
 
