@@ -1,6 +1,6 @@
 set(TEST_EXE utests)
 
-file(GLOB TEST_SUITES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB TEST_SUITES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 add_executable(${TEST_EXE} ${TEST_SUITES})
 target_link_libraries(${TEST_EXE} GTest::gtest_main ${PROJECT_NAME})
 target_compile_options(${TEST_EXE} PRIVATE -Wall -Werror -Wextra -Wpedantic)
