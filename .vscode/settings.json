@@ -1,0 +1,8 @@
+{
+  "C_Cpp.default.cppStandard": "c++17",
+  "files.associations": {
+    ".clang-tidy": "yaml",
+    ".clang-format": "yaml",
+  },
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true
+}
