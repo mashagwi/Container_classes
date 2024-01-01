@@ -8,33 +8,95 @@
 
 namespace s21 {
 
-template <class T>
+template <typename T>
 class list {
  public:
   using value_type = T;
   using reference = T &;
   using const_reference = const T &;
-  using iterator = T *;
-  using const_iterator = const T *;
   using size_type = std::size_t;
+  using pointer = T *;
+  using const_pointer = const T *;
 
  private:
   struct Node {
+    Node() = default;
+    Node(const_reference value) : data(value) {}
+
     Node *next{nullptr};
     Node *prev{nullptr};
     value_type data;
-
-    Node() = default;
-    Node(const_reference value) : data(value) {}
-    Node(value_type &&value) : data(std::move(value)) {}
   };
 
-  // private:
- public:
   Node *head{nullptr};
   Node *tail{nullptr};
   Node *fake_end{nullptr};
   size_type size_{0};
+
+ public:
+  template <typename value_type>
+  struct Iterator {
+    explicit Iterator(Node *p = nullptr) : ptr(p) {}
+
+    reference operator*() const { return ptr->data; }
+
+    pointer operator->() const { return &**this; }
+
+    Iterator &operator++() {
+      ptr = ptr->next;
+      return *this;
+    }
+
+    Iterator operator++(int) {
+      auto ret = *this;
+      ++*this;
+      return ret;
+    }
+
+    Iterator &operator--() {
+      ptr = ptr->prev;
+      return *this;
+    }
+
+    Iterator operator--(int) {
+      auto ret = *this;
+      --*this;
+      return ret;
+    }
+
+    bool operator==(const Iterator &rhs) const { return ptr == rhs.ptr; }
+
+    bool operator!=(const Iterator &rhs) const { return !(*this == rhs); }
+
+   private:
+    friend class list<value_type>;
+    Node *ptr;
+  };
+
+  template <typename value_type>
+  struct ConstIterator : public Iterator<value_type> {
+    const_reference operator*() const {
+      return Iterator<value_type>::operator*();
+    }
+
+    const_pointer operator->() const {
+      return Iterator<value_type>::operator->();
+    }
+
+   private:
+    friend class list<value_type>;
+  };
+
+  using iterator = Iterator<T>;
+  using const_iterator = ConstIterator<T>;
+
+  iterator begin() const { return Iterator<T>(head); }
+
+  iterator end() const { return Iterator<T>(fake_end); }
+
+  const_iterator cbegin() const { return ConstIterator<T>(head); }
+
+  const_iterator cend() const { return ConstIterator<T>(fake_end); }
 
   list() {
     fake_end = new Node();
