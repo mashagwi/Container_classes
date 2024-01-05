@@ -36,7 +36,7 @@ class list {
  public:
   template <typename value_type>
   struct Iterator {
-    explicit Iterator(Node *p = nullptr) : ptr(p) {}
+    Iterator(Node *p = nullptr) : ptr(p) {}
 
     reference operator*() const { return ptr->data; }
 
@@ -75,6 +75,7 @@ class list {
 
   template <typename value_type>
   struct ConstIterator : public Iterator<value_type> {
+	  using Iterator<value_type>::Iterator;
     const_reference operator*() const {
       return Iterator<value_type>::operator*();
     }
@@ -119,6 +120,8 @@ class list {
 
  public:
   bool empty() const { return size_ == 0; }
+
+  size_type size() { return size_; }
 
   void push_back(const_reference value) {
     Node *n = new Node(value);
