@@ -1,4 +1,7 @@
+# Additional non-templated
 build
+.DS_Store
+
 
 # Prerequisites
 *.d
