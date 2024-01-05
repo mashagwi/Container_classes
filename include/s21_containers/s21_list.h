@@ -30,43 +30,46 @@ class list {
 
   Node *head{nullptr};
   Node *tail{nullptr};
-  Node *fake_end{nullptr};
   size_type size_{0};
 
  public:
   template <typename value_type>
-  struct Iterator {
-    Iterator(Node *p = nullptr) : ptr(p) {}
+  struct ListIterator {
+    ListIterator(Node *p = nullptr) : ptr(p) {}
 
     reference operator*() const { return ptr->data; }
 
     pointer operator->() const { return &**this; }
 
-    Iterator &operator++() {
+    ListIterator &operator++() {
       ptr = ptr->next;
       return *this;
     }
 
-    Iterator operator++(int) {
+    ListIterator operator++(int) {
       auto ret = *this;
       ++*this;
       return ret;
     }
 
-    Iterator &operator--() {
+    ListIterator &operator--() {
       ptr = ptr->prev;
       return *this;
     }
 
-    Iterator operator--(int) {
+    ListIterator operator--(int) {
       auto ret = *this;
       --*this;
       return ret;
     }
 
-    bool operator==(const Iterator &rhs) const { return ptr == rhs.ptr; }
+    bool operator==(const ListIterator &other) const {
+      return ptr == other.ptr;
+    }
 
-    bool operator!=(const Iterator &rhs) const { return !(*this == rhs); }
+    bool operator!=(const ListIterator &other) const {
+      return !(*this == other);
+    }
 
    private:
     friend class list<value_type>;
@@ -74,72 +77,123 @@ class list {
   };
 
   template <typename value_type>
-  struct ConstIterator : public Iterator<value_type> {
-	  using Iterator<value_type>::Iterator;
+  struct ListConstIterator : public ListIterator<value_type> {
+    using ListIterator<value_type>::ListIterator;
     const_reference operator*() const {
-      return Iterator<value_type>::operator*();
+      return ListIterator<value_type>::operator*();
     }
 
     const_pointer operator->() const {
-      return Iterator<value_type>::operator->();
+      return ListIterator<value_type>::operator->();
     }
 
    private:
     friend class list<value_type>;
   };
 
-  using iterator = Iterator<T>;
-  using const_iterator = ConstIterator<T>;
+  using iterator = ListIterator<T>;
+  using const_iterator = ListConstIterator<T>;
 
-  iterator begin() const { return Iterator<T>(head); }
+  iterator begin() noexcept { return ListIterator<T>(head); }
 
-  iterator end() const { return Iterator<T>(fake_end); }
+  iterator end() noexcept { return ListIterator<T>(tail); }
 
-  const_iterator cbegin() const { return ConstIterator<T>(head); }
+  const_iterator begin() const noexcept { return ListConstIterator<T>(head); }
 
-  const_iterator cend() const { return ConstIterator<T>(fake_end); }
+  const_iterator end() const noexcept { return ListConstIterator<T>(tail); }
+
+  const_iterator cbegin() const noexcept { return begin(); }
+
+  const_iterator cend() const noexcept { return end(); }
 
   list() {
-    fake_end = new Node();
-    check_links();
+    tail = new Node();
+    tail->prev = tail->next = tail;
+    head = tail;
+  }
+
+  explicit list(size_type count) : list() {
+    while (count--) push_back(value_type());
+  }
+
+  list(std::initializer_list<value_type> const &items) : list() {
+    for (const auto &e : items) push_back(e);
+  }
+
+  list(const list &other) : list() {
+    for (const auto &e : other) push_back(e);
+  }
+
+  list(list &&other) noexcept
+      : head(other.head), tail(other.tail), size_(other.size_) {
+    other.head = other.tail = nullptr;
+    other.size_ = 0;
+  }
+
+  list &operator=(list &&other) noexcept {
+    if (this != &other) {
+      free();
+      head = other.head;
+      tail = other.tail;
+      size_ = other.size_;
+      other.head = other.tail = nullptr;
+      other.size_ = 0;
+    }
+    return *this;
   }
 
   ~list() { free(); }
 
-  void check_links() {
-    // if (!tail) {
-    tail = head = fake_end;
-    fake_end->next = fake_end->prev = fake_end;
-    //}
-  }
-
   void free() {
-    while (head != fake_end) pop_back();
-    delete fake_end;
+    clear();
+    delete tail;
   }
 
- public:
-  bool empty() const { return size_ == 0; }
+  reference front() { return *begin(); }
 
-  size_type size() { return size_; }
+  reference back() { return *--end(); }
+
+  const_reference front() const { return *begin(); }
+
+  const_reference back() const { return *--end(); }
+
+  bool empty() const noexcept { return size_ == 0; }
+
+  size_type size() const noexcept { return size_; }
+
+  size_type max_size() const noexcept { return SIZE_MAX / sizeof(Node) / 2; }
+
+  void clear() noexcept {
+    while (head != tail) pop_back();
+  }
+
+  // TODO: convert from iterator to const_iterator
+  iterator insert(const_iterator pos, const_reference value) {
+    Node *n = new Node(value);
+    n->next = pos.ptr;
+    n->prev = pos.ptr->prev;
+    n->prev->next = pos.ptr->prev = n;
+    if (empty()) head = n;
+    ++size_;
+    return n;
+  }
 
   void push_back(const_reference value) {
     Node *n = new Node(value);
+    n->next = tail;
+    n->prev = tail->prev;
+    n->prev->next = tail->prev = n;
     if (empty()) head = n;
-    n->next = fake_end;
-    n->prev = tail;
-    tail->next = n;
-    fake_end->prev = tail = n;
     ++size_;
   }
 
   void pop_back() {
-    tail->prev->next = fake_end;
-    fake_end->prev = tail->prev;
-    delete tail;
-    tail = fake_end->prev;
+    auto popped = tail->prev;
+    popped->prev->next = tail;
+    tail->prev = popped->prev;
+    delete popped;
     --size_;
-    if (empty()) head = fake_end;
+    if (empty()) head = tail;
   }
 };
 
