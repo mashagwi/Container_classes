@@ -34,6 +34,8 @@ class list {
 
  public:
   template <typename value_type>
+  struct ListConstIterator;
+  template <typename value_type>
   struct ListIterator {
     ListIterator(Node *p = nullptr) : ptr(p) {}
 
@@ -71,8 +73,13 @@ class list {
       return !(*this == other);
     }
 
+    operator ListConstIterator<value_type>() const {
+      return ListConstIterator<value_type>(ptr);
+    }
+
    private:
     friend class list<value_type>;
+    friend class ListConstIterator<value_type>;
     Node *ptr;
   };
 
@@ -94,13 +101,13 @@ class list {
   using iterator = ListIterator<T>;
   using const_iterator = ListConstIterator<T>;
 
-  iterator begin() noexcept { return ListIterator<T>(head); }
+  iterator begin() noexcept { return iterator(head); }
 
-  iterator end() noexcept { return ListIterator<T>(tail); }
+  iterator end() noexcept { return iterator(tail); }
 
-  const_iterator begin() const noexcept { return ListConstIterator<T>(head); }
+  const_iterator begin() const noexcept { return const_iterator(head); }
 
-  const_iterator end() const noexcept { return ListConstIterator<T>(tail); }
+  const_iterator end() const noexcept { return const_iterator(tail); }
 
   const_iterator cbegin() const noexcept { return begin(); }
 
@@ -167,33 +174,73 @@ class list {
     while (head != tail) pop_back();
   }
 
-  // TODO: convert from iterator to const_iterator
   iterator insert(const_iterator pos, const_reference value) {
     Node *n = new Node(value);
     n->next = pos.ptr;
     n->prev = pos.ptr->prev;
     n->prev->next = pos.ptr->prev = n;
-    if (empty()) head = n;
+    if (head == pos.ptr) head = n;
     ++size_;
     return n;
   }
 
+  iterator erase(const_iterator pos) {
+    auto popped = pos.ptr;
+    auto ret = popped->next;
+    popped->prev->next = popped->next;
+    popped->next->prev = popped->prev;
+    --size_;
+    if (head == popped) head = popped->next;
+    ;
+    delete popped;
+    return ret;
+  }
+
   void push_back(const_reference value) {
-    Node *n = new Node(value);
-    n->next = tail;
-    n->prev = tail->prev;
-    n->prev->next = tail->prev = n;
-    if (empty()) head = n;
-    ++size_;
+    insert(cend(), value);
+    //    Node *n = new Node(value);
+    //    n->next = tail;
+    //    n->prev = tail->prev;
+    //    n->prev->next = tail->prev = n;
+    //    if (empty()) head = n;
+    //    ++size_;
   }
 
   void pop_back() {
-    auto popped = tail->prev;
-    popped->prev->next = tail;
-    tail->prev = popped->prev;
-    delete popped;
-    --size_;
-    if (empty()) head = tail;
+    erase(--cend());
+    //		tail->prev->next = fake_end;
+    //    fake_end->prev = tail->prev;
+    //    delete tail;
+    //    tail = fake_end->prev;
+    //    --size_;
+    //    if (empty()) head = fake_end;
+  }
+
+  void push_front(const_reference value) { insert(cbegin(), value); }
+
+  void pop_front() { erase(cbegin()); }
+
+  void swap(list &other) noexcept {
+    using std::swap;
+    swap(head, other.head);
+    swap(tail, other.tail);
+    swap(size_, other.size_);
+  }
+
+  // TODO: segmentation with even number of elements
+  void reverse() noexcept {
+    using std::swap;
+    auto b = begin();
+    auto e = --end();
+    swap(tail->next, tail->prev);
+    head = e.ptr;
+    for (size_type i = 0; i != size() / 2; ++i) {
+      std::swap(b.ptr->next, e.ptr->next);
+      std::swap(b.ptr->prev, e.ptr->prev);
+      b = e.ptr->next;
+      e = b.ptr->prev;
+    }
+    if (size() % 2 == 1) std::swap(b.ptr->next, b.ptr->prev);
   }
 };
 
