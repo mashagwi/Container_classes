@@ -227,95 +227,36 @@ class list {
     swap(size_, other.size_);
   }
 
-  // TODO: segmentation with even number of elements
   void reverse() noexcept {
     using std::swap;
-    auto b = begin();
-    auto e = --end();
-    swap(tail->next, tail->prev);
-    head = e.ptr;
-    for (size_type i = 0; i != size() / 2; ++i) {
-      std::swap(b.ptr->next, e.ptr->next);
-      std::swap(b.ptr->prev, e.ptr->prev);
-      b = e.ptr->next;
-      e = b.ptr->prev;
+    auto curr = head;
+    while (curr != tail) {
+      swap(curr->next, curr->prev);
+      curr = curr->prev;
     }
-    if (size() % 2 == 1) std::swap(b.ptr->next, b.ptr->prev);
+    swap(tail->next, tail->prev);
+    head = tail->next;
+  }
+
+  void splice(const_iterator pos, list &other) {
+    auto p = pos.ptr;
+    auto b = other.begin().ptr;
+    auto e = other.end().ptr;
+    p->prev->next = b;
+    b->prev = p->prev;
+    e->prev->next = p;
+    p->prev = e->prev;
+    head = tail->next;
+    other.head = other.tail;
+    other.tail->prev = other.tail->next = tail;
+  }
+
+  void unique() {
+    for (auto curr = ++begin(), prev = begin(); curr != end(); curr = prev++)
+      if (*curr == *prev) erase(curr);
   }
 };
 
 }  // namespace s21
-
-/* public:
-  // default constructor
-  vector() : m_size(0U), m_capacity(0U), arr(nullptr) {}
-  // parametrized constructor for fixed size vector (explicit was used in order
-  // to avoid automatic type conversion)
-  explicit vector(size_type n)
-      : m_size(n), m_capacity(n), arr(n ? new T[n] : nullptr) {}
-  // initializer list constructor
-  vector(std::initializer_list<value_type> const &items);
-  // copy constructor with simplified syntax
-  vector(const vector &v)
-      : m_size(v.m_size), m_capacity(v.m_capacity), arr(v.arr){};
-  // move constructor with simplified syntax
-  vector(vector &&v) : m_size(v.m_size), m_capacity(v.m_capacity), arr(v.arr) {
-    v.arr = nullptr;
-    v.m_size = 0;
-  }
-
-  ~vector() { delete[] arr; }
-
-  // some method examples
-  // size getter
-  size_type size();
-  // element accessor
-  value_type at(size_type i);
-  // append new element
-  void push_back(value_type v);
-};
-
-template <typename T>
-void vector<T>::reserve_more_capacity(size_t size) {
-  if (size > m_capacity) {
-    value_type *buff = new value_type[size];
-    for (size_t i = 0; i < m_size; ++i) buff[i] = std::move(arr[i]);
-    delete[] arr;
-    arr = buff;
-    m_capacity = size;
-  }
-}
-
-template <typename T>
-vector<T>::vector(std::initializer_list<value_type> const &items) {
-  arr = new value_type[items.size()];
-  int i = 0;
-  for (auto it = items.begin(); it != items.end(); it++) {
-    arr[i] = *it;
-    i++;
-  }
-  m_size = items.size();
-  m_capacity = items.size();
-}
-
-template <typename T>
-size_t vector<T>::size() {
-  return m_size;
-}
-
-template <typename T>
-T vector<T>::at(size_type i) {
-  return arr[i];
-}
-
-template <typename T>
-void vector<T>::push_back(T v) {
-  if (m_size == m_capacity) {
-    reserve_more_capacity(m_size * 2);
-  }
-  arr[m_size++] = v;
-}
-
-*/
 
 #endif  // S21_LIST_H_
