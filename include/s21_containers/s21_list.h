@@ -191,7 +191,6 @@ class list {
     popped->next->prev = popped->prev;
     --size_;
     if (head == popped) head = popped->next;
-    ;
     delete popped;
     return ret;
   }
@@ -239,21 +238,52 @@ class list {
   }
 
   void splice(const_iterator pos, list &other) {
-    auto p = pos.ptr;
-    auto b = other.begin().ptr;
-    auto e = other.end().ptr;
-    p->prev->next = b;
-    b->prev = p->prev;
-    e->prev->next = p;
-    p->prev = e->prev;
-    head = tail->next;
+    if (!other.empty()) {
+      auto p = pos.ptr;
+      auto b = other.begin().ptr;
+      auto e = other.end().ptr;
+      p->prev->next = b;
+      b->prev = p->prev;
+      e->prev->next = p;
+      p->prev = e->prev;
+      head = tail->next;
+      other.head = other.tail;
+      other.tail->prev = other.tail->next = tail;
+      size_ += other.size();
+      other.size_ = 0;
+    }
+  }
+
+  void merge(list &other) {
+    if (this == &other) return;
+    auto curr = head;
+    auto other_curr = other.head;
+    auto temp = curr;
+    while (other_curr != other.tail) {
+      if (curr == tail || !(curr->data < other_curr->data)) {
+        temp = other_curr->next;
+        temp->prev = other.tail;
+        curr->prev->next = other_curr;
+        other_curr->prev = curr->prev;
+        curr->prev = other_curr;
+        other_curr->next = curr;
+        if (curr == head) head = other_curr;
+        other_curr = temp;
+      } else
+        curr = curr->next;
+    }
     other.head = other.tail;
     other.tail->prev = other.tail->next = tail;
+    size_ += other.size();
+    other.size_ = 0;
   }
 
   void unique() {
-    for (auto curr = ++begin(), prev = begin(); curr != end(); curr = prev++)
-      if (*curr == *prev) erase(curr);
+    for (auto curr = begin(), prev = begin(); curr != end(); curr = prev)
+      if (*++curr == *prev)
+        erase(curr);
+      else
+        ++prev;
   }
 };
 
