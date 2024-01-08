@@ -260,7 +260,11 @@ class list {
     auto other_curr = other.head;
     auto temp = curr;
     while (other_curr != other.tail) {
-      if (curr == tail || !(curr->data < other_curr->data)) {
+      if (curr == tail) {
+        splice(end(), other);
+        return;
+      }
+      if (!(curr->data < other_curr->data)) {
         temp = other_curr->next;
         temp->prev = other.tail;
         curr->prev->next = other_curr;
@@ -285,6 +289,72 @@ class list {
       else
         ++prev;
   }
+
+  void sort() {
+    if (size() > 1) QuickSort(1, size());
+  }
+
+  void QuickSort(size_type first, size_type last) {
+    using std::swap;
+    if (first < last) {
+      size_type l = first, r = last, n = 0;
+
+      Node *left = head;
+      while (++n < l) left = left->next;
+
+      Node *mid = left;
+      while (n++ < (l + r) / 2) mid = mid->prev;
+
+      n = size();
+      Node *right = tail->prev;
+      while (n-- > r) right = right->prev;
+
+      // Node *temp_first = left->prev;
+      // Node *temp_last = right->next;
+
+      do {
+        while (left->next != tail && left->data < mid->data) {
+          left = left->next;
+          ++l;
+        }
+        while (right->prev != tail && mid->data < right->data) {
+          right = right->prev;
+          --r;
+        }
+        if (l <= r) {
+          swap(left->prev->next, right->prev->next);
+          swap(left->next->prev, right->next->prev);
+          swap(left->prev, right->prev);
+          swap(left->next, right->next);
+          l++;
+          r--;
+        }
+      } while (l <= r);
+      QuickSort(first, r);
+      QuickSort(l, last);
+    }
+  }
+
+  // Node *mid = head;
+  // size_type n = 0, f = 1, l = size();
+  // while (++n < l / 2)
+  //	mid = mid->next;
+  // do {
+  //	while (f->next != tail && f->data < mid->data) {
+  //		first = first->next;
+  //	while (l->prev != tail && (mid->data < l->data))
+  //		l = l->prev;
+  //	if (f != l) {
+  //		swap(f->prev->next, l->prev->next);
+  //		swap(f->next->prev, l->next->prev);
+  //		swap(f->prev, l->prev);
+  //		swap(f->next, l->next);
+  //		f++;
+  //		l--;
+  //	}
+  //} while (f != l);
+  // if (first != l) QuickSort(first, l);
+  // if (f != last) QuickSort(f, last);
 };
 
 }  // namespace s21
