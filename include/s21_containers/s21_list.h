@@ -291,48 +291,103 @@ class list {
   }
 
   void sort() {
-    if (size() > 1) QuickSort(1, size());
+    if (size() > 1) {
+	    QuickSort(1, size());
+	    head = tail->next;
+    }
   }
 
   void QuickSort(size_type first, size_type last) {
     using std::swap;
-    if (first < last) {
-      size_type l = first, r = last, n = 0;
+		////		 Node* partition(Node *l, Node *h)
+		////	{
+		////			// set h element as pivot
+		////			int x = h->data;
+		////			Node *i = l->prev_node;
 
-      Node *left = head;
-      while (++n < l) left = left->next;
+		////			// Similar to from j=l to h-1
+		////			for (Node *j = l; j != h; j = j->next_node)
+		////			{
+		////					if (j->data <= x)
+		////					{
+		////							// Similar to i++
+		////							i = (i == NULL)? l : i->next_node;
+		////							swap(&(i->data), &(j->data));
+		////					}
+		////			}
 
-      Node *mid = left;
-      while (n++ < (l + r) / 2) mid = mid->prev;
+		////			i = (i == NULL)? l : i->next_node;
+		////			swap(&(i->data), &(h->data));
+		////			return i;
+		////	}
 
-      n = size();
-      Node *right = tail->prev;
-      while (n-- > r) right = right->prev;
+		////	/* Recursive implementation of quicksort for linked list */
+		////	void _quickSort(Node* l, Node *h)
+		////	{
+		////			if (h != NULL && l != h && l != h->next_node)
+		////			{
+		////					Node *p = partition(l, h);
+		////					_quickSort(l, p->prev_node);
+		////					_quickSort(p->next_node, h);
+		////			}
 
-      // Node *temp_first = left->prev;
-      // Node *temp_last = right->next;
+		////	}
 
-      do {
-        while (left->next != tail && left->data < mid->data) {
-          left = left->next;
-          ++l;
-        }
-        while (right->prev != tail && mid->data < right->data) {
-          right = right->prev;
-          --r;
-        }
-        if (l <= r) {
-          swap(left->prev->next, right->prev->next);
-          swap(left->next->prev, right->next->prev);
-          swap(left->prev, right->prev);
-          swap(left->next, right->next);
-          l++;
-          r--;
-        }
-      } while (l <= r);
-      QuickSort(first, r);
-      QuickSort(l, last);
-    }
+		////	// Main function: It calls the _quickSort() method
+
+		////	void quickSort(Node *head)
+		////	{
+		////			// Find the last node
+		////			Node *h = lastNode(head);
+		////			// Call recursive QuickSort
+		////			_quickSort(head, h);
+		////	} 
+		
+		//if (first < last) {
+    //  size_type l = first, r = last, n = 0;
+
+    //  Node *left = tail->next;
+    //  while (++n < l) left = left->next;
+
+    //  Node *mid = left;
+    //  while (n++ < (l + r) / 2) mid = mid->next;
+
+    //  Node *right = mid;
+    //  while (n++ <= r) right = right->next;
+
+    //  // Node *temp_first = left->prev;
+    //  // Node *temp_last = right->next;
+
+    //  do {
+    //    while (left->next != tail && left->data < mid->data) {
+    //      left = left->next;
+    //      ++l;
+    //    }
+    //    while (right->prev != tail && mid->data < right->data) {
+    //      right = right->prev;
+    //      --r;
+    //    }
+    //    if (l <= r) {
+		//			left->prev->next = right;
+		//			right->next->prev = left;
+		//			if (left != right->prev) {
+		//				left->next->prev = right;
+		//				right->prev->next = left;
+		//				swap(left->next, right->next);
+		//				swap(left->prev, right->prev);
+		//			} else {
+		//				swap(left->next, left->prev);
+		//				swap(right->next, right->prev);
+		//				swap(left->next, right->prev);
+		//			}
+    //      l++;
+    //      r--;
+    //    }
+    //  } while (l <= r);
+    //  //} while (l <= r);
+    //  QuickSort(first, r);
+    //  QuickSort(l, last);
+    //}
   }
 
   // Node *mid = head;
