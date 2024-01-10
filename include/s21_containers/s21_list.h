@@ -195,25 +195,9 @@ class list {
     return ret;
   }
 
-  void push_back(const_reference value) {
-    insert(cend(), value);
-    //    Node *n = new Node(value);
-    //    n->next = tail;
-    //    n->prev = tail->prev;
-    //    n->prev->next = tail->prev = n;
-    //    if (empty()) head = n;
-    //    ++size_;
-  }
+  void push_back(const_reference value) { insert(cend(), value); }
 
-  void pop_back() {
-    erase(--cend());
-    //		tail->prev->next = fake_end;
-    //    fake_end->prev = tail->prev;
-    //    delete tail;
-    //    tail = fake_end->prev;
-    //    --size_;
-    //    if (empty()) head = fake_end;
-  }
+  void pop_back() { erase(--cend()); }
 
   void push_front(const_reference value) { insert(cbegin(), value); }
 
@@ -297,6 +281,22 @@ class list {
     }
   }
 
+  template <typename... Args>
+  iterator insert_many(const_iterator pos, Args &&...args) {
+    for (auto &&item : {std::forward<Args>(args)...}) pos = insert(pos, item);
+    return pos;
+  }
+
+  template <typename... Args>
+  void insert_many_back(Args &&...args) {
+    return (push_back(args), ...);
+  }
+
+  template <typename... Args>
+  void insert_many_front(Args &&...args) {
+    return (push_front(args), ...);
+  }
+
  private:
   void swap(Node &left, Node &right) {
     using std::swap;
@@ -316,15 +316,15 @@ class list {
   }
 
   void QuickSort(Node *first, Node *last) {
-    // Need to store previous ptr to restore index, cause we move pointers
-    // through list
+    // Store ptrs to restore index, cause we move pointers through list
     Node *first_cpy = first->prev;
-    Node *last_cpy = last->prev;
+    Node *last_cpy = last->next;
 
-    if (last != tail && first != last && first != last->next) {
-      Node *p = partition(first_cpy->next, last_cpy->next);
+    // if (last != tail && first != last && first != last->next) {
+    if (first != last && first != last->next) {
+      Node *p = partition(first_cpy->next, last_cpy->prev);
       QuickSort(first_cpy->next, p->prev);
-      QuickSort(p->next, last_cpy->next);
+      QuickSort(p->next, last_cpy->prev);
     }
   }
 
@@ -336,7 +336,8 @@ class list {
       if (!(pivot < fast->data)) {
         slow = slow->next;
         swap(*slow, *fast);
-        std::swap(slow, fast);  // cause we change links, need to restore index
+        // Need to restore index, cause we change links
+        std::swap(slow, fast);
       }
     }
     slow = slow->next;
