@@ -10,32 +10,22 @@ namespace s21 {
 
 template <typename T>
 class list {
+ private:
+  struct Node;
+
  public:
+  struct ListIterator;
+  struct ListConstIterator;
+
   using value_type = T;
   using reference = T &;
   using const_reference = const T &;
   using size_type = std::size_t;
   using pointer = T *;
   using const_pointer = const T *;
+  using iterator = ListIterator;
+  using const_iterator = ListConstIterator;
 
- private:
-  struct Node {
-    Node() = default;
-    Node(const_reference value) : data(value) {}
-
-    Node *next{nullptr};
-    Node *prev{nullptr};
-    value_type data;
-  };
-
-  Node *head{nullptr};
-  Node *tail{nullptr};
-  size_type size_{0};
-
- public:
-  template <typename value_type>
-  struct ListConstIterator;
-  template <typename value_type>
   struct ListIterator {
     ListIterator(Node *p = nullptr) : ptr(p) {}
 
@@ -73,45 +63,20 @@ class list {
       return !(*this == other);
     }
 
-    operator ListConstIterator<value_type>() const {
-      return ListConstIterator<value_type>(ptr);
-    }
+    operator ListConstIterator() const { return ListConstIterator(ptr); }
 
    private:
     friend class list<value_type>;
-    friend class ListConstIterator<value_type>;
+    friend class ListConstIterator;
     Node *ptr;
   };
 
-  template <typename value_type>
-  struct ListConstIterator : public ListIterator<value_type> {
-    using ListIterator<value_type>::ListIterator;
-    const_reference operator*() const {
-      return ListIterator<value_type>::operator*();
-    }
+  struct ListConstIterator : public ListIterator {
+    using ListIterator::ListIterator;
+    const_reference operator*() const { return ListIterator::operator*(); }
 
-    const_pointer operator->() const {
-      return ListIterator<value_type>::operator->();
-    }
-
-   private:
-    friend class list<value_type>;
+    const_pointer operator->() const { return ListIterator::operator->(); }
   };
-
-  using iterator = ListIterator<T>;
-  using const_iterator = ListConstIterator<T>;
-
-  iterator begin() noexcept { return iterator(head); }
-
-  iterator end() noexcept { return iterator(tail); }
-
-  const_iterator begin() const noexcept { return const_iterator(head); }
-
-  const_iterator end() const noexcept { return const_iterator(tail); }
-
-  const_iterator cbegin() const noexcept { return begin(); }
-
-  const_iterator cend() const noexcept { return end(); }
 
   list() {
     tail = new Node();
@@ -151,11 +116,6 @@ class list {
 
   ~list() { free(); }
 
-  void free() {
-    clear();
-    delete tail;
-  }
-
   reference front() { return *begin(); }
 
   reference back() { return *--end(); }
@@ -164,15 +124,23 @@ class list {
 
   const_reference back() const { return *--end(); }
 
+  iterator begin() noexcept { return iterator(head); }
+
+  iterator end() noexcept { return iterator(tail); }
+
+  const_iterator begin() const noexcept { return const_iterator(head); }
+
+  const_iterator end() const noexcept { return const_iterator(tail); }
+
+  const_iterator cbegin() const noexcept { return begin(); }
+
+  const_iterator cend() const noexcept { return end(); }
+
   bool empty() const noexcept { return size_ == 0; }
 
   size_type size() const noexcept { return size_; }
 
   size_type max_size() const noexcept { return SIZE_MAX / sizeof(Node) / 2; }
-
-  void clear() noexcept {
-    while (head != tail) pop_back();
-  }
 
   iterator insert(const_iterator pos, const_reference value) {
     Node *n = new Node(value);
@@ -210,34 +178,6 @@ class list {
     swap(size_, other.size_);
   }
 
-  void reverse() noexcept {
-    using std::swap;
-    auto curr = head;
-    while (curr != tail) {
-      swap(curr->next, curr->prev);
-      curr = curr->prev;
-    }
-    swap(tail->next, tail->prev);
-    head = tail->next;
-  }
-
-  void splice(const_iterator pos, list &other) {
-    if (!other.empty()) {
-      auto p = pos.ptr;
-      auto b = other.begin().ptr;
-      auto e = other.end().ptr;
-      p->prev->next = b;
-      b->prev = p->prev;
-      e->prev->next = p;
-      p->prev = e->prev;
-      head = tail->next;
-      other.head = other.tail;
-      other.tail->prev = other.tail->next = tail;
-      size_ += other.size();
-      other.size_ = 0;
-    }
-  }
-
   void merge(list &other) {
     if (this == &other) return;
     auto curr = head;
@@ -264,6 +204,34 @@ class list {
     other.tail->prev = other.tail->next = tail;
     size_ += other.size();
     other.size_ = 0;
+  }
+
+  void splice(const_iterator pos, list &other) {
+    if (!other.empty()) {
+      auto p = pos.ptr;
+      auto b = other.begin().ptr;
+      auto e = other.end().ptr;
+      p->prev->next = b;
+      b->prev = p->prev;
+      e->prev->next = p;
+      p->prev = e->prev;
+      head = tail->next;
+      other.head = other.tail;
+      other.tail->prev = other.tail->next = tail;
+      size_ += other.size();
+      other.size_ = 0;
+    }
+  }
+
+  void reverse() noexcept {
+    using std::swap;
+    auto curr = head;
+    while (curr != tail) {
+      swap(curr->next, curr->prev);
+      curr = curr->prev;
+    }
+    swap(tail->next, tail->prev);
+    head = tail->next;
   }
 
   void unique() {
@@ -298,6 +266,24 @@ class list {
   }
 
  private:
+  struct Node {
+    Node() = default;
+    Node(const_reference value) : data(value) {}
+
+    Node *next{nullptr};
+    Node *prev{nullptr};
+    value_type data;
+  };
+
+  void clear() noexcept {
+    while (head != tail) pop_back();
+  }
+
+  void free() {
+    clear();
+    delete tail;
+  }
+
   void swap(Node &left, Node &right) {
     using std::swap;
     if (&left == &right) return;
@@ -345,6 +331,11 @@ class list {
 
     return last;
   }
+
+  // Private members
+  Node *head{nullptr};
+  Node *tail{nullptr};
+  size_type size_{0};
 };
 
 }  // namespace s21
