@@ -231,3 +231,79 @@ TEST(ListMembers, Begin3) {
   EXPECT_EQ(*l.begin(), s1);
   EXPECT_EQ(*++l.begin(), s2);
 }
+
+TEST(ListMembers, ConstBegin1) {
+  std::string s = "Hello";
+  const s21::list<std::string> l{s};
+  EXPECT_EQ(*l.begin(), s);
+}
+
+TEST(ListMembers, ConstBegin2) {
+  std::string s1 = "Hi";
+  std::string s2 = ", ";
+  std::string s3 = "World!";
+  const s21::list<std::string> l{s1, s2, s3};
+  EXPECT_EQ(*l.begin(), s1);
+  EXPECT_EQ(*++l.begin(), s2);
+}
+
+TEST(ListMembers, End1) {
+  std::string s = "Hello";
+  s21::list<std::string> l;
+  auto it = l.end();
+  l.push_back(s);
+  EXPECT_EQ(*--it, s);
+}
+
+TEST(ListMembers, End2) {
+  std::string s = "Hello";
+  s21::list<std::string> l{s};
+  EXPECT_EQ(*--l.end(), s);
+}
+
+TEST(ListMembers, End3) {
+  std::string s1 = "Hi";
+  std::string s2 = ", ";
+  std::string s3 = "World!";
+  s21::list<std::string> l{s1, s2, s3};
+  EXPECT_EQ(*--l.end(), s3);
+  EXPECT_EQ(*++l.end(), s1);
+}
+
+TEST(ListMembers, ConstEnd1) {
+  std::string s = "Hello";
+  const s21::list<std::string> l{s};
+  EXPECT_EQ(*--l.end(), s);
+}
+
+TEST(ListMembers, ConstEnd2) {
+  std::string s1 = "Hi";
+  std::string s2 = ", ";
+  std::string s3 = "World!";
+  const s21::list<std::string> l{s1, s2, s3};
+  EXPECT_EQ(*--l.end(), s3);
+  EXPECT_EQ(*++l.end(), s1);
+}
+
+TEST(ListMembers, Cend1) {
+  std::string s = "Hello";
+  s21::list<std::string> l;
+  auto it = l.cend();
+  l.push_back(s);
+  EXPECT_EQ(*--it, s);
+}
+
+TEST(ListMembers, Cend2) {
+  std::string s = "Hello";
+  s21::list<std::string> l{s};
+  EXPECT_EQ(*--l.cend(), s);
+}
+
+TEST(ListMembers, Cend3) {
+  std::string s1 = "Hi";
+  std::string s2 = ", ";
+  std::string s3 = "World!";
+  s21::list<std::string> l{s1, s2, s3};
+  EXPECT_EQ(*--l.cend(), s3);
+  EXPECT_EQ(*++l.cend(), s1);
+}
