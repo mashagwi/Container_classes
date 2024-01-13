@@ -1,11 +1,6 @@
 #ifndef S21_QUEUE_H
 #define S21_QUEUE_H
 
-#include <cstddef>
-#include <initializer_list>
-#include <memory>
-#include <utility>
-
 #include "s21_list.h"
 
 namespace s21 {
@@ -27,7 +22,10 @@ class queue {
 
   queue(queue &&other) noexcept : c(std::move(other.c)) {}
 
-  queue &operator=(queue &&other) noexcept { c = std::move(other.c); }
+  queue &operator=(queue &&other) noexcept {
+    c = std::move(other.c);
+    return *this;
+  }
 
   ~queue() = default;
 
@@ -37,7 +35,7 @@ class queue {
 
   const_reference front() const { return c.front(); }
 
-  const_reference back() const { return c.front(); }
+  const_reference back() const { return c.back(); }
 
   bool empty() const noexcept { return c.empty(); }
 

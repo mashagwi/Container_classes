@@ -251,19 +251,18 @@ class list {
 
   template <typename... Args>
   iterator insert_many(const_iterator pos, Args &&...args) {
-    for (auto &&item : {std::forward<Args>(args)...})
-	    insert(pos, item);
+    for (auto &&item : {std::forward<Args>(args)...}) insert(pos, item);
     return --pos;
   }
 
   template <typename... Args>
   void insert_many_back(Args &&...args) {
-	  insert_many(cend(), args...);
+    insert_many(cend(), args...);
   }
 
   template <typename... Args>
   void insert_many_front(Args &&...args) {
-	  insert_many(cbegin(), args...);
+    insert_many(cbegin(), args...);
   }
 
  private:

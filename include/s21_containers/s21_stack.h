@@ -1,11 +1,6 @@
 #ifndef S21_STACK_H
 #define S21_STACK_H
 
-#include <cstddef>
-#include <initializer_list>
-#include <memory>
-#include <utility>
-
 #include "s21_list.h"
 
 namespace s21 {
@@ -27,7 +22,10 @@ class stack {
 
   stack(stack &&other) noexcept : c(std::move(other.c)) {}
 
-  stack &operator=(stack &&other) noexcept { c = std::move(other.c); }
+  stack &operator=(stack &&other) noexcept {
+    c = std::move(other.c);
+    return *this;
+  }
 
   ~stack() = default;
 

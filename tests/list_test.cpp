@@ -301,7 +301,8 @@ TEST(ListMembers, Cend1) {
   s21::list<std::string> l;
   auto it = l.cend();
   l.push_back(s);
-  EXPECT_EQ(*--it, s);
+  it--;
+  EXPECT_EQ(*it, s);
 }
 
 TEST(ListMembers, Cend2) {
@@ -712,8 +713,8 @@ TEST(ListMembers, Sort4) {
 TEST(ListMembers, Sort5) {
   s21::list<std::string> l1{"Hello", ", ", "World", "!"};
   std::list<std::string> l2{"Hello", ", ", "World", "!"};
-  auto itb1 = l1.begin(), ite1 = l1.end()--;
-  auto itb2 = l2.begin(), ite2 = l2.end()--;
+  auto itb1 = l1.begin(), ite1 = --l1.end();
+  auto itb2 = l2.begin(), ite2 = --l2.end();
   l1.sort();
   l2.sort();
   auto it1 = l1.begin();
@@ -728,82 +729,82 @@ TEST(ListMembers, InsertMany1) {
   const int sz = 5;
   s21::list<int> l;
   auto it = l.insert_many(l.begin(), 1, 2, 3, 4, 5);
-	EXPECT_EQ(5, *it);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(5, l.back());
-	EXPECT_EQ(1, l.front());
+  EXPECT_EQ(5, *it);
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(5, l.back());
+  EXPECT_EQ(1, l.front());
 }
 
 TEST(ListMembers, InsertMany2) {
   const int sz = 1;
   s21::list<int> l;
   auto it = l.insert_many(l.begin(), 1);
-	EXPECT_EQ(1, *it);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(1, l.back());
-	EXPECT_EQ(1, l.front());
+  EXPECT_EQ(1, *it);
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(1, l.back());
+  EXPECT_EQ(1, l.front());
 }
 
 TEST(ListMembers, InsertMany3) {
   const int sz = 8;
   s21::list<int> l{1, 2, 3, 4, 5};
   auto it = l.insert_many(l.begin(), 10, 20, 30);
-	EXPECT_EQ(30, *it);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(5, l.back());
-	EXPECT_EQ(10, l.front());
+  EXPECT_EQ(30, *it);
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(5, l.back());
+  EXPECT_EQ(10, l.front());
 }
 
 TEST(ListMembers, InsertManyBack1) {
   const int sz = 5;
   s21::list<int> l;
   l.insert_many_back(1, 2, 3, 4, 5);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(5, l.back());
-	EXPECT_EQ(1, l.front());
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(5, l.back());
+  EXPECT_EQ(1, l.front());
 }
 
 TEST(ListMembers, InsertManyBack2) {
   const int sz = 1;
   s21::list<int> l;
   l.insert_many_back(1);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(1, l.back());
-	EXPECT_EQ(1, l.front());
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(1, l.back());
+  EXPECT_EQ(1, l.front());
 }
 
 TEST(ListMembers, InsertManyBack3) {
   const int sz = 8;
   s21::list<int> l{1, 2, 3, 4, 5};
   l.insert_many_back(10, 20, 30);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(30, l.back());
-	EXPECT_EQ(1, l.front());
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(30, l.back());
+  EXPECT_EQ(1, l.front());
 }
 
 TEST(ListMembers, InsertManyFront1) {
   const int sz = 5;
   s21::list<int> l;
   l.insert_many_front(1, 2, 3, 4, 5);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(5, l.back());
-	EXPECT_EQ(1, l.front());
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(5, l.back());
+  EXPECT_EQ(1, l.front());
 }
 
 TEST(ListMembers, InsertManyFront2) {
   const int sz = 1;
   s21::list<int> l;
   l.insert_many_front(1);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(1, l.back());
-	EXPECT_EQ(1, l.front());
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(1, l.back());
+  EXPECT_EQ(1, l.front());
 }
 
 TEST(ListMembers, InsertManyFront3) {
   const int sz = 8;
   s21::list<int> l{1, 2, 3, 4, 5};
   l.insert_many_front(10, 20, 30);
-	EXPECT_EQ(sz, l.size());
-	EXPECT_EQ(5, l.back());
-	EXPECT_EQ(10, l.front());
+  EXPECT_EQ(sz, l.size());
+  EXPECT_EQ(5, l.back());
+  EXPECT_EQ(10, l.front());
 }
