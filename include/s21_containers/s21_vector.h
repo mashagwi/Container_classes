@@ -76,7 +76,7 @@ vector<T>::vector(std::initializer_list<value_type> const &items) {
   }
   m_size = items.size();
   m_capacity = items.size();
-};
+}
 
 template <typename T>
 size_t vector<T>::size() {
