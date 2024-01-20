@@ -42,15 +42,58 @@ class search_tree {
   search_tree(std::initializer_list<value_type> const& items) {
     for (auto&& elem : items) insert(elem);
   }
-  search_tree(const search_tree& other) noexcept(false);
-  search_tree& operator=(const search_tree& other) noexcept(false);
-  search_tree(search_tree&& other) noexcept;
-  search_tree& operator=(search_tree&& other) noexcept;
+  search_tree(const search_tree& other) noexcept(false) {
+    root_ = CopyRecursive(other.root_, nil_, other.nil_);
+  }
+  search_tree& operator=(const search_tree& other) noexcept(false) {
+    type(other).swap(*this);
+    return *this;
+  }
+  search_tree(search_tree&& other) noexcept {
+    root_ = std::exchange(other.root_, nullptr);
+    nil_ = std::exchange(other.nil_, nullptr);
+    n_ = std::exchange(other.n_, 0);
+  }
+  search_tree& operator=(search_tree&& other) noexcept {
+    type(std::move(other)).swap(*this);
+    return *this;
+  }
   ~search_tree() {
     if (!empty()) clear();
     delete nil_;
   }
 
+  // special support
+
+  void clear() noexcept { DestroyRecursive(root_); }
+  void swap(search_tree& other) noexcept {
+    using std::swap;
+    swap(root_, other.root_);
+    swap(nil_, other.nil_);
+    swap(n_, other.n_);
+  }
+  friend void swap(const search_tree& a, const search_tree& b) noexcept {
+    a.swap(b);
+  }
+
+ protected:
+  struct Node;
+  Node* CopyRecursive(Node* node, Node* parent, Node* other_nil) {
+    if (node == other_nil) return nil_;
+    Node* new_node = new Node(node->data_, node->color_, parent);
+    new_node->left_ = CopyRecursive(node->left_, new_node, other_nil);
+    new_node->right_ = CopyRecursive(node->right_, new_node, other_nil);
+    n_++;
+    return new_node;
+  }
+  void DestroyRecursive(Node* node) noexcept {
+    if (!node || node == nil_) return;
+    DestroyRecursive(node->left_);
+    DestroyRecursive(node->right_);
+    delete node, n_--;
+  }
+
+ public:
   // iterators
   iterator begin() noexcept {
     if (empty()) return end();
@@ -58,13 +101,13 @@ class search_tree {
     while (tmp->left_->is_internal()) tmp = tmp->left_;
     return iterator(tmp);
   }
-  iterator end() noexcept { return iterator(nil_); }
   const_iterator begin() const noexcept {
     if (empty()) return end();
     Node* tmp = root_;
     while (tmp->left_->is_internal()) tmp = tmp->left_;
     return const_iterator(tmp);
   }
+  iterator end() noexcept { return iterator(nil_); }
   const_iterator end() const noexcept { return const_iterator(nil_); }
   const_iterator cbegin() const noexcept { return begin(); }
   const_iterator cend() const noexcept { return end(); }
@@ -93,28 +136,14 @@ class search_tree {
   size_type max_size() const noexcept {
     return std::numeric_limits<difference_type>::max() / sizeof(Node);
   }
-  void clear() noexcept { DestroyRecursive(root_); }
   void erase(const Key& key) {
     iterator pos = find(key);
     if (pos != end()) erase(pos);
   }
   void erase(iterator pos);
-  void swap(search_tree& other) noexcept {
-    using std::swap;
-    swap(root_, other.root_);
-    swap(nil_, other.nil_);
-    swap(n_, other.n_);
-  }
-  friend void swap(const search_tree& a, const search_tree& b) noexcept {
-    a.swap(b);
-  }
-  bool contains(const Key& key) const noexcept {
-    auto pos = find(key);
-    return pos != end();
-  }
 
-  iterator find(const Key& key) noexcept;
-  const_iterator find(const Key& key) const noexcept;
+  // modifiers
+
   iterator insert(const value_type& data);
 
   std::pair<iterator, bool> insert_if_ne(const value_type& data) {
@@ -155,6 +184,14 @@ class search_tree {
     }
     return vec;
   }
+
+  // lookup
+  bool contains(const Key& key) const noexcept {
+    auto pos = find(key);
+    return pos != end();
+  }
+  iterator find(const Key& key) noexcept;
+  const_iterator find(const Key& key) const noexcept;
 
  protected:
   class Node;
@@ -207,22 +244,22 @@ class search_tree {
   };
 
  protected:
-  static key_type get_key(const value_type& data);
+  static key_type get_key(const value_type& data) {
+    if constexpr (std::is_void_v<Value>)
+      return data;
+    else
+      return data.first;
+  }
   void InsertFixup(Node* node);
   void EraseFixup(Node* node);
   Node* TrinodeRestructure(Node* node);
   void TransplantSubtree(Node* dst, Node* src);
-  Node* CopyTreeRecursive(Node* node, Node* parent, Node* other_nil);
-  void DestroyRecursive(Node* node) noexcept;
-
   void Print(std::ostream& os) const noexcept {
     os << "N" << std::endl;
     if (!empty()) PrintRecursive(os, "", root_, true);
   }
-
   void PrintRecursive(std::ostream& os, const std::string& prefix, Node* node,
                       bool is_left) const noexcept;
-
   friend std::ostream& operator<<(std::ostream& os,
                                   const search_tree& t) noexcept {
     t.Print(os);
@@ -266,53 +303,6 @@ class search_tree {
 };
 
 template <class Key, class Value, class Compare>
-search_tree<Key, Value, Compare>::search_tree(const search_tree& other) {
-  root_ = CopyTreeRecursive(other.root_, nil_, other.nil_);
-}
-
-template <class Key, class Value, class Compare>
-typename search_tree<Key, Value, Compare>::Node*
-search_tree<Key, Value, Compare>::CopyTreeRecursive(Node* node, Node* parent,
-                                                    Node* other_nil) {
-  if (node == other_nil) return nil_;
-  Node* new_node = new Node(node->data_, node->color_, parent);
-  new_node->left_ = CopyTreeRecursive(node->left_, new_node, other_nil);
-  new_node->right_ = CopyTreeRecursive(node->right_, new_node, other_nil);
-  n_++;
-  return new_node;
-}
-
-template <class Key, class Value, class Compare>
-search_tree<Key, Value, Compare>::search_tree(search_tree&& other) noexcept {
-  root_ = std::exchange(other.root_, nullptr);
-  nil_ = std::exchange(other.nil_, nullptr);
-  n_ = std::exchange(other.n_, 0);
-}
-
-template <class Key, class Value, class Compare>
-typename search_tree<Key, Value, Compare>::search_tree&
-search_tree<Key, Value, Compare>::operator=(const search_tree& other) noexcept(
-    false) {
-  type(other).swap(*this);
-  return *this;
-}
-
-template <class Key, class Value, class Compare>
-typename search_tree<Key, Value, Compare>::search_tree&
-search_tree<Key, Value, Compare>::operator=(search_tree&& other) noexcept {
-  type(std::move(other)).swap(*this);
-  return *this;
-}
-
-template <class Key, class Value, class Compare>
-void search_tree<Key, Value, Compare>::DestroyRecursive(Node* node) noexcept {
-  if (!node || node == nil_) return;
-  DestroyRecursive(node->left_);
-  DestroyRecursive(node->right_);
-  delete node, n_--;
-}
-
-template <class Key, class Value, class Compare>
 typename search_tree<Key, Value, Compare>::iterator
 search_tree<Key, Value, Compare>::find(const Key& key) noexcept {
   if (root_ == nil_) return end();
@@ -344,15 +334,6 @@ search_tree<Key, Value, Compare>::find(const Key& key) const noexcept {
       cur = cur->right_;
   }
   return iterator(cur);
-}
-
-template <class Key, class Value, class Compare>
-typename search_tree<Key, Value, Compare>::key_type
-search_tree<Key, Value, Compare>::get_key(const value_type& data) {
-  if constexpr (std::is_void_v<Value>)
-    return data;
-  else
-    return data.first;
 }
 
 template <class Key, class Value, class Compare>
