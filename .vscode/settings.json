@@ -5,5 +5,9 @@
     ".clang-format": "yaml",
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "editor.renderWhitespace": "all",
+  "editor.rulers": [
+    80
+  ],
 }
