@@ -12,8 +12,8 @@
 namespace s21 {
 
 template <class Key, class Compare = std::less<Key>>
-class set : public RBTree<Key, void, Compare> {
-  using tree_type = RBTree<Key, void, Compare>;
+class set {
+  using tree_type = search_tree<Key, void, Compare>;
 
  public:
   using key_type = Key;
@@ -24,68 +24,56 @@ class set : public RBTree<Key, void, Compare> {
   using const_iterator = typename tree_type::const_iterator;
   using size_type = size_t;
 
+  // special
   set() = default;
-  set(std::initializer_list<value_type> const &items);
-  set(const set &other);
-  set &operator=(const set &other);
-  set(set &&other) noexcept;
-  set &operator=(set &&other) noexcept;
+  set(std::initializer_list<value_type> const &items) : tree_(items) {}
+  set(const set &other) : tree_(other.tree_) {}
+  set &operator=(const set &other) {
+    if (this != &other) tree_.operator=(other.tree_);
+    return *this;
+  }
+  set(set &&other) noexcept : tree_(std::move(other.tree_)) {}
+  set &operator=(set &&other) noexcept {
+    if (this != &other) tree_.operator=(std::move(other.tree_));
+    return *this;
+  }
   ~set() = default;
 
-  std::pair<iterator, bool> insert(const value_type &value);
+  // iterators
+  iterator begin() noexcept { return tree_.begin(); }
+  iterator end() noexcept { return tree_.end(); }
+  const_iterator begin() const noexcept { return tree_.begin(); }
+  const_iterator end() const noexcept { return tree_.end(); }
+  const_iterator cbegin() const noexcept { return tree_.cbegin(); }
+  const_iterator cend() const noexcept { return tree_.cend(); }
+
+  // capacity
+  size_type size() const noexcept { return tree_.size(); }
+  size_type max_size() const noexcept { return tree_.max_size(); }
+  bool empty() const noexcept { return tree_.empty(); }
+
+  // modifiers
+  std::pair<iterator, bool> insert(const value_type &value) {
+    return tree_.insert_if_ne(value);
+  }
   template <class... Args>
-  std::vector<std::pair<iterator, bool>> insert_many(Args &&...args);
-  void merge(set &other);
-  iterator find(const Key &key);
+  std::vector<std::pair<iterator, bool>> insert_many(Args &&...args) {
+    return tree_.insert_many_if_ne(std::forward<Args>(args)...);
+  }
+  void erase(const Key &key) noexcept { tree_.erase(key); }
+  void erase(iterator pos) noexcept { tree_.erase(pos); }
+  void clear() noexcept { tree_.clear(); }
+  void merge(set &other) { tree_.merge_if_ne(other.tree_); }
+  void swap(set &other) noexcept { tree_.swap(other.tree_); }
+
+  // lookup
+  bool contains(const Key &key) const noexcept { return tree_.contains(key); }
+  iterator find(const Key &key) noexcept { return tree_.find(key); }
+  const_iterator find(const Key &key) const noexcept { return tree_.find(key); }
+
+ private:
+  tree_type tree_;
 };
-
-template <class Key, class Compare>
-set<Key, Compare>::set(const set &other) : RBTree<Key, void, Compare>(other) {}
-
-template <class Key, class Compare>
-typename set<Key, Compare>::set &set<Key, Compare>::operator=(
-    const set &other) {
-  tree_type::operator=(other);
-  return *this;
-}
-
-template <class Key, class Compare>
-typename set<Key, Compare>::set &set<Key, Compare>::operator=(
-    set &&other) noexcept {
-  tree_type::operator=(std::move(other));
-  return *this;
-}
-
-template <class Key, class Compare>
-set<Key, Compare>::set(std::initializer_list<value_type> const &items)
-    : RBTree<Key, void, Compare>(items) {}
-
-template <class Key, class Compare>
-set<Key, Compare>::set(set &&other) noexcept
-    : RBTree<Key, void, Compare>(std::move(other)) {}
-
-template <class Key, class Compare>
-std::pair<typename set<Key, Compare>::iterator, bool> set<Key, Compare>::insert(
-    const value_type &value) {
-  return tree_type::InsertIfNe(value);
-}
-
-template <class Key, class Compare>
-typename set<Key, Compare>::iterator set<Key, Compare>::find(const Key &key) {
-  return tree_type::Find(key);
-}
-
-template <class Key, class Compare>
-void set<Key, Compare>::merge(set &other) {
-  tree_type::MergeIfNe(other);
-}
-
-template <class Key, class Compare>
-template <class... Args>
-std::vector<std::pair<typename set<Key, Compare>::iterator, bool>>
-set<Key, Compare>::insert_many(Args &&...args) {
-  return tree_type::InsertManyIfNe(args...);
-}
 
 }  // namespace s21
 #endif  // S21_SET_H_
