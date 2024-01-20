@@ -46,7 +46,7 @@ class search_tree {
     root_ = CopyRecursive(other.root_, nil_, other.nil_);
   }
   search_tree& operator=(const search_tree& other) noexcept(false) {
-    type(other).swap(*this);
+    search_tree(other).swap(*this);
     return *this;
   }
   search_tree(search_tree&& other) noexcept {
@@ -55,7 +55,7 @@ class search_tree {
     n_ = std::exchange(other.n_, 0);
   }
   search_tree& operator=(search_tree&& other) noexcept {
-    type(std::move(other)).swap(*this);
+    search_tree(std::move(other)).swap(*this);
     return *this;
   }
   ~search_tree() {
