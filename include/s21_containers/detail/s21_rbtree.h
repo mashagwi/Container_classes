@@ -73,7 +73,7 @@ class search_tree {
   template <typename = std::enable_if<!std::is_void_v<Value>>>
   std::add_lvalue_reference_t<const mapped_type> at(const Key& key) const {
     auto pos = find(key);
-    if (pos == end()) throw std::out_of_range("The entry does not exist.");
+    if (pos == end()) throw std::out_of_range("at(): the entry does not exist");
     return (*pos).second;
   }
   template <typename = std::enable_if<!std::is_void_v<Value>>>
