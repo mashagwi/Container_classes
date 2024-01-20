@@ -33,6 +33,8 @@ class search_tree {
   using const_reference = const value_type&;
   using iterator = Iterator<false>;
   using const_iterator = Iterator<true>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   // special
   search_tree() = default;
