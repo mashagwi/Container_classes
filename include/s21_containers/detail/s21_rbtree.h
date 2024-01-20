@@ -28,6 +28,7 @@ class search_tree {
   using value_type = std::conditional_t<std::is_void_v<Value>, Key,
                                         std::pair<const Key, Value>>;
   using size_type = size_t;
+  using difference_type = ptrdiff_t;
   using key_compare = Compare;
   using reference = value_type&;
   using const_reference = const value_type&;
@@ -90,7 +91,7 @@ class search_tree {
   bool empty() const noexcept { return n_ == 0; }
   size_type size() const noexcept { return n_; }
   size_type max_size() const noexcept {
-    return std::numeric_limits<typename iterator::difference_type>::max();
+    return std::numeric_limits<difference_type>::max() / sizeof(Node);
   }
   void clear() noexcept { DestroyRecursive(root_); }
   void erase(const Key& key) {
@@ -165,7 +166,7 @@ class search_tree {
     friend class Iterator<!is_const>;
 
    public:
-    using difference_type = std::ptrdiff_t;
+    using difference_type = search_tree::difference_type;
     using value_type = search_tree::value_type;
     using pointer =
         std::conditional_t<is_const, const value_type*, value_type*>;
