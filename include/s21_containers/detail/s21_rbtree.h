@@ -171,6 +171,9 @@ class search_tree {
     if (pos != end()) erase(pos);
   }
   void erase(iterator pos);
+  void erase_all(const Key& key) {
+    while (contains(key)) erase(key);
+  }
 
   // modifiers
 
