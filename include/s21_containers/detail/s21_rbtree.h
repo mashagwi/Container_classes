@@ -195,7 +195,7 @@ class search_tree {
   }
 
   template <class... Args>
-  std::vector<std::pair<iterator, bool>> insert_many_if_ne(Args&&... args) {
+  std::vector<std::pair<iterator, bool>> insert_if_ne_many(Args&&... args) {
     std::vector<std::pair<iterator, bool>> vec;
     for (auto&& arg : {args...}) {
       vec.push_back(insert_if_ne(arg));
