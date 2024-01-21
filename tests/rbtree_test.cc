@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <random>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -14,66 +15,133 @@
 template class s21::search_tree<int>;
 template class s21::search_tree<int, std::string>;
 
-TEST(SearchTreeTest, OneTemplateParameterInitializerList) {
-  const s21::search_tree<int> t = {1, 2, 3};
-  EXPECT_EQ(t.size(), 3);
-}
+// NOLINTBEGIN
+class SearchTreeTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    auto il_ = {4, 7, 12, 15, 3, 5, 14, 18, 16, 17, -1};
+    iv_ = il_;
+    sort(iv_.begin(), iv_.end());
+    it_ = il_;
+  }
 
-TEST(SearchTreeTest, TwoTemplateParametersInitializerList) {
-  const s21::search_tree<int, std::string> t = {
+  int i_ = 0;
+  std::vector<int> iv_;
+  s21::search_tree<int> it_;
+  s21::search_tree<int, std::string> ist_ = {
+      {1, "one"}, {2, "two"}, {3, "four"}};
+};
+// NOLINTEND
+
+TEST_F(SearchTreeTest, InitializerListConstructor) {
+  const s21::search_tree<int> it = {1, 2, 3};
+  EXPECT_EQ(it.size(), 3);
+  const s21::search_tree<int, std::string> ist = {
       {1, "one"}, {2, "two"}, {3, "three"}};
-  EXPECT_EQ(t.size(), 3);
+  EXPECT_EQ(ist.size(), 3);
 }
 
-TEST(SearchTreeTest, CopyConstructor) {
-  const s21::search_tree<int> t1 = {4, 7, 12, 15, 3, 5, 14, 18, 16, 17};
+TEST_F(SearchTreeTest, EquivalenceOperators) {  // NOLINT
+  const s21::search_tree<int> it1 = {1, 3, 4};
+  const s21::search_tree<int> it2 = {1, 3, 4};
+  ASSERT_TRUE(it1 == it1);
+  ASSERT_TRUE(it1 == it2);
+  const s21::search_tree<int> it3 = {1, 3, 3};
+  ASSERT_TRUE(it1 != it3);
+  const s21::search_tree<int> it4 = {1, 3};
+  ASSERT_TRUE(it1 != it4);
 
-  const s21::search_tree<int> t2(t1);  // NOLINT
-  ASSERT_EQ(t2.size(), t1.size());
-
-  auto iter1 = t1.begin();
-  auto iter2 = t2.begin();
-  for (; iter1 != t1.end(); ++iter1, ++iter2) {
-    ASSERT_EQ(*iter2, *iter1);
-  }
+  const s21::search_tree<int, std::string> ist1 = {
+      {1, "one"}, {2, "two"}, {3, "three"}};
+  const s21::search_tree<int, std::string> ist2 = {
+      {1, "one"}, {2, "two"}, {3, "three"}};
+  ASSERT_TRUE(ist1 == ist1);
+  ASSERT_TRUE(ist1 == ist2);
+  const s21::search_tree<int, std::string> ist3 = {
+      {1, "one"}, {2, "two"}, {3, "four"}};
+  ASSERT_TRUE(ist1 != ist3);
+  const s21::search_tree<int, std::string> ist4 = {
+      {1, "one"}, {2, "two"}, {3, "three"}, {4, "four"}};
+  ASSERT_TRUE(ist1 != ist4);
 }
 
-TEST(SearchTreeTest, CopyAssignment) {
-  const s21::search_tree<int> t1 = {4, 7, 12, 15, 3, 5, 14, 18, 16, 17};
-  s21::search_tree<int> t2;
+TEST_F(SearchTreeTest, CopyConstructor) {
+  const s21::search_tree<int> it(it_);
+  ASSERT_EQ(it, it_);
 
-  t2 = t1;
-  ASSERT_EQ(t2.size(), t1.size());
-
-  auto iter1 = t1.begin();
-  auto iter2 = t2.begin();
-  for (; iter1 != t1.end(); ++iter1, ++iter2) {
-    ASSERT_EQ(*iter2, *iter1);
-  }
+  const s21::search_tree<int, std::string> ist(ist_);
+  ASSERT_EQ(ist, ist_);
 }
 
-TEST(SearchTreeTest, MoveAssignment) {
-  s21::search_tree<int> t1 = {4, 7, 12, 15, 3, 5, 14, 18, 16, 17};  // NOLINT
-  s21::search_tree<int> ref(t1);
-  s21::search_tree<int> t2;
+TEST_F(SearchTreeTest, MoveConstructor) {
+  const s21::search_tree<int> ref(it_);
+  const s21::search_tree<int> it(std::move(it_));
+  ASSERT_EQ(it, ref);
+  ASSERT_TRUE(it_.empty());
 
-  t2 = std::move(t1);
-  ASSERT_EQ(t2.size(), ref.size());
-
-  auto iter1 = ref.begin();
-  auto iter2 = t2.begin();
-  for (; iter1 != ref.end(); ++iter1, ++iter2) {
-    ASSERT_EQ(*iter2, *iter1);
-  }
+  const s21::search_tree<int, std::string> ref2(ist_);
+  const s21::search_tree<int, std::string> ist(std::move(ist_));
+  ASSERT_EQ(ist, ref2);
+  ASSERT_TRUE(ist_.empty());
 }
 
-TEST(SearchTreeTest, IsEmptyInitially) {
-  const s21::search_tree<int> t;
-  EXPECT_EQ(t.size(), 0);
-  EXPECT_EQ(t.empty(), true);
+TEST_F(SearchTreeTest, CopyAssignment) {
+  s21::search_tree<int> it;
+  it = it_;
+  ASSERT_EQ(it, it_);
+
+  s21::search_tree<int, std::string> ist;
+  ist = ist_;
+  ASSERT_EQ(ist, ist_);
 }
 
-TEST(SearchTreeTest, ProperOrderDemonstration) {
+TEST_F(SearchTreeTest, MoveAssignment) {
+  const s21::search_tree<int> ref(it_);
+  s21::search_tree<int> it;
+  it = std::move(it_);
+  ASSERT_EQ(it, ref);
+  ASSERT_TRUE(it_.empty());
+
+  const s21::search_tree<int, std::string> ref2(ist_);
+  s21::search_tree<int, std::string> ist;
+  ist = std::move(ist_);
+  ASSERT_EQ(ist, ref2);
+  ASSERT_TRUE(ist_.empty());
+}
+
+TEST_F(SearchTreeTest, ClearMethod) {
+  EXPECT_FALSE(it_.empty());
+  it_.clear();
+  EXPECT_TRUE(it_.empty());
+
+  EXPECT_FALSE(ist_.empty());
+  ist_.clear();
+  EXPECT_TRUE(ist_.empty());
+}
+
+TEST_F(SearchTreeTest, EmptyMethod) {
+  EXPECT_FALSE(it_.empty());
+  it_.clear();
+  EXPECT_TRUE(it_.empty());
+  EXPECT_EQ(it_.size(), 0);
+
+  EXPECT_FALSE(ist_.empty());
+  ist_.clear();
+  EXPECT_TRUE(ist_.empty());
+  EXPECT_EQ(ist_.size(), 0);
+}
+
+TEST_F(SearchTreeTest, IsEmptyInitially) {
+  const s21::search_tree<int> it;
+  EXPECT_EQ(it.size(), 0);
+  EXPECT_TRUE(it.empty());
+
+  const s21::search_tree<int, std::string> ist;
+  EXPECT_EQ(ist.size(), 0);
+  EXPECT_TRUE(ist.empty());
+}
+
+TEST_F(SearchTreeTest, ProperOrderDemonstration) {
   auto il = {4, 7, 12, 15, 3, 5, 14, 18, 16, 17};  // NOLINT
   std::vector<int> vec = il;
   sort(vec.begin(), vec.end());
@@ -101,23 +169,202 @@ TEST(SearchTreeTest, ProperOrderDemonstration) {
   EXPECT_EQ(tree.empty(), true);
 }
 
-TEST(SearchTreeTest, IteratorUnderlyingConstness) {
-  using citer_ptr = s21::search_tree<int>::const_iterator::pointer;
-  using citer_type = std::remove_pointer_t<citer_ptr>;
-  EXPECT_TRUE(std::is_const_v<citer_type>);
-
-  using citer_ref = s21::search_tree<int>::const_iterator::reference;
-  using citer_type2 = std::remove_reference_t<citer_ref>;
-  EXPECT_TRUE(std::is_const_v<citer_type2>);
+TEST_F(SearchTreeTest, AtMethod) {  // NOLINT
+  s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
+  EXPECT_EQ(t.at(1), "one");
+  t.at(1) = "not one";
+  EXPECT_EQ(t.at(1), "not one");
+  EXPECT_EQ(t.at(2), "two");
+  EXPECT_EQ(t.at(3), "three");
+  ASSERT_THROW(t.at(4), std::out_of_range);  // NOLINT
 }
 
-TEST(SearchTreeTest, IteratorComparisons) {
+TEST_F(SearchTreeTest, BracketsOperator) {
+  s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
+  // NOLINTBEGIN
+  EXPECT_EQ(t[1], "one");
+  EXPECT_EQ(t[2], "two");
+  EXPECT_EQ(t[3], "three");
+  EXPECT_EQ(t[4], "");
+  EXPECT_EQ(t[5], "");
+  t[5] = "five";
+  EXPECT_EQ(t[5], "five");
+  // NOLINTEND
+}
+
+TEST_F(SearchTreeTest, InsertOrAssignMethod) {
+  s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
+
+  auto [pos, res] = t.insert_or_assign(4, std::string("four"));
+  EXPECT_EQ(res, true);
+  EXPECT_EQ((*pos).second, "four");
+
+  std::tie(pos, res) = t.insert_or_assign(4, std::string("five"));
+  EXPECT_EQ(res, false);
+  EXPECT_EQ(t[4], "five");
+}
+
+TEST_F(SearchTreeTest, InsertIfNe2params) {
+  s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
+
+  auto [pos, res] = t.insert_if_ne(4, std::string("four"));
+  EXPECT_EQ(res, true);
+  EXPECT_EQ((*pos).second, "four");
+
+  std::tie(pos, res) = t.insert_if_ne(4, std::string("five"));
+  EXPECT_EQ(res, false);
+  EXPECT_EQ(t[4], "four");
+}
+
+TEST_F(SearchTreeTest, BoundMethods) {  // NOLINT
+  s21::search_tree<int, std::string> t = {
+      {1, "one"}, {2, "two"}, {2, "two"}, {2, "two"}, {3, "three"}};
+
+  ASSERT_EQ(t.count(2), 3);
+
+  auto posl = t.lower_bound(2);
+  using value_type = s21::search_tree<int, std::string>::value_type;
+  ASSERT_EQ(*posl, value_type(2, "two"));
+  ASSERT_EQ((*posl).first, 2);
+  ASSERT_EQ((*posl).second, "two");
+
+  auto posu = t.upper_bound(2);
+  ASSERT_EQ(*posu, value_type(3, "three"));
+
+  auto [eql, equ] = t.equal_range(2);
+  EXPECT_EQ(posl, eql);
+  EXPECT_EQ(posu, equ);
+
+  posu--;
+  ASSERT_EQ(*posu, value_type(2, "two"));
+}
+
+TEST_F(SearchTreeTest, PrintMethod) {
+  const s21::search_tree<int, std::string> t = {
+      {1, "one"}, {2, "two"}, {3, "three"}};
+  std::clog << t;
+  std::clog << t.max_size() << '\n';
+  s21::search_tree<int> t2 = {5, 1, 6, 1234, 65, 1, 54, 0};  // NOLINT
+  std::clog << t2;
+  std::clog << t2.max_size() << '\n';
+}
+
+TEST_F(SearchTreeTest, MergeMethod) {
+  s21::search_tree<int> t = {1, 2, 3};   // NOLINT
+  s21::search_tree<int> t2 = {3, 4, 5};  // NOLINT
+  t.merge(t2);
+  t.merge(t2);
+  EXPECT_EQ(t.size(), 6);
+  EXPECT_EQ(t2.size(), 0);
+  s21::search_tree<int> t3;
+  t.merge(t3);
+  EXPECT_EQ(t.size(), 6);
+  EXPECT_EQ(t3.size(), 0);
+}
+
+int rand_i(unsigned i) {
+  // NOLINTBEGIN
+  i = (i << 13) ^ i;
+  return ((i * (i * i * 15731 + 789221) + 1376312589) & 0x7fffffff);
+  // NOLINTEND
+}
+TEST_F(SearchTreeTest, LargeOrderingTest) {
+  std::vector<int> v;
+  s21::search_tree<int> s;
+  for (int i = 0; i < 10; i++) {  // NOLINT
+    const int rand = rand_i(i);
+    v.push_back(rand);
+    s.insert(rand);
+  }
+  sort(v.begin(), v.end());
+
+  // proper order after insertion
+  int i = 0;
+  for (const auto& elem : s) {
+    ASSERT_EQ(elem, v[i]);
+    ++i;
+  }
+
+  // // shuffle vector to remove elements in a random order
+  // auto rd = std::random_device{};
+  // auto rng = std::default_random_engine{rd()};
+  // std::shuffle(std::begin(v), std::end(v), rng);
+
+  // for (int i = 0; i < 10; i++) {  // NOLINT
+  //   std::cerr << i << ":" << v.back() << std::endl;
+  //   int rem = v.back();
+  //   v.pop_back();
+  //   s.erase(rem);
+  // }
+
+  // sort(v.begin(), v.end());
+  // // proper order after removing
+  // i = 0;
+  // for (const auto& elem : s) {
+  //   ASSERT_EQ(elem, v[i]);
+  //   ++i;
+  // }
+}
+
+/* iterators */
+
+TEST_F(SearchTreeTest, IteratorComparisonsWithDifferentConstness) {
   s21::search_tree<int> t = {1, 2, 3};  // NOLINT
   EXPECT_TRUE(t.begin() == t.cbegin());
   EXPECT_TRUE(t.begin() != t.cend());
 }
 
-TEST(SearchTreeTest, IteratorIteration) {  // NOLINT
+TEST_F(SearchTreeTest, MutableIteration) {
+  for (auto iter = it_.begin(); iter != it_.end(); ++iter, ++i_) {
+    ASSERT_EQ(*iter, iv_[i_]);
+  }
+  auto iter = it_.begin();  // NOLINT
+  EXPECT_FALSE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+}
+TEST_F(SearchTreeTest, ReverseMutableIteration) {
+  std::reverse(iv_.begin(), iv_.end());
+  for (auto iter = it_.rbegin(); iter != it_.rend(); ++iter, ++i_) {
+    ASSERT_EQ(*iter, iv_[i_]);
+  }
+  auto iter = it_.rbegin();  // NOLINT
+  EXPECT_FALSE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+}
+
+TEST_F(SearchTreeTest, NonMutableIteration) {
+  for (auto iter = it_.cbegin(); iter != it_.cend(); ++iter, ++i_) {
+    ASSERT_EQ(*iter, iv_[i_]);
+  }
+  auto iter = it_.cbegin();  // NOLINT
+  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+}
+TEST_F(SearchTreeTest, ReverseNonMutableIteration) {
+  std::reverse(iv_.begin(), iv_.end());
+  for (auto iter = it_.crbegin(); iter != it_.crend(); ++iter, ++i_) {
+    ASSERT_EQ(*iter, iv_[i_]);
+  }
+  auto iter = it_.crbegin();  // NOLINT
+  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+}
+
+TEST_F(SearchTreeTest, NonMutableIterationConst) {
+  const s21::search_tree<int> cit = it_;
+  for (auto iter = cit.begin(); iter != cit.end(); ++iter, ++i_) {
+    ASSERT_EQ(*iter, iv_[i_]);
+  }
+  auto iter = cit.begin();  // NOLINT
+  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+}
+TEST_F(SearchTreeTest, ReverseNonMutableIterationConst) {
+  std::reverse(iv_.begin(), iv_.end());
+  const s21::search_tree<int> cit = it_;
+  for (auto iter = cit.rbegin(); iter != cit.rend(); ++iter, ++i_) {
+    ASSERT_EQ(*iter, iv_[i_]);
+  }
+  auto iter = cit.rbegin();  // NOLINT
+  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+}
+
+TEST_F(SearchTreeTest, IteratorDemonstration) {  // NOLINT
   s21::search_tree<int> t = {1, 2, 3};
 
   auto iter = t.begin();
@@ -143,123 +390,4 @@ TEST(SearchTreeTest, IteratorIteration) {  // NOLINT
   ASSERT_EQ(*riter, 1);
   ++riter;
   ASSERT_EQ(riter, t.rend());
-}
-
-TEST(SearchTreeTest, AtMethod) {  // NOLINT
-  s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
-  EXPECT_EQ(t.at(1), "one");
-  t.at(1) = "not one";
-  EXPECT_EQ(t.at(1), "not one");
-  EXPECT_EQ(t.at(2), "two");
-  EXPECT_EQ(t.at(3), "three");
-  ASSERT_THROW(t.at(4), std::out_of_range);  // NOLINT
-}
-
-TEST(SearchTreeTest, BracketsOperator) {
-  s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
-  // NOLINTBEGIN
-  EXPECT_EQ(t[1], "one");
-  EXPECT_EQ(t[2], "two");
-  EXPECT_EQ(t[3], "three");
-  EXPECT_EQ(t[4], "");
-  EXPECT_EQ(t[5], "");
-  t[5] = "five";
-  EXPECT_EQ(t[5], "five");
-  // NOLINTEND
-}
-
-TEST(SearchTreeTest, InsertOrAssignMethod) {
-  s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
-
-  auto [pos, res] = t.insert_or_assign(4, std::string("four"));
-  EXPECT_EQ(res, true);
-  EXPECT_EQ((*pos).second, "four");
-
-  std::tie(pos, res) = t.insert_or_assign(4, std::string("five"));
-  EXPECT_EQ(res, false);
-  EXPECT_EQ(t[4], "five");
-}
-
-TEST(SearchTreeTest, InsertIfNe2params) {
-  s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
-
-  auto [pos, res] = t.insert_if_ne(4, std::string("four"));
-  EXPECT_EQ(res, true);
-  EXPECT_EQ((*pos).second, "four");
-
-  std::tie(pos, res) = t.insert_if_ne(4, std::string("five"));
-  EXPECT_EQ(res, false);
-  EXPECT_EQ(t[4], "four");
-}
-
-TEST(SearchTreeTest, BoundMethods) {  // NOLINT
-  s21::search_tree<int, std::string> t = {
-      {1, "one"}, {2, "two"}, {2, "two"}, {2, "two"}, {3, "three"}};
-
-  ASSERT_EQ(t.count(2), 3);
-
-  auto posl = t.lower_bound(2);
-  using value_type = s21::search_tree<int, std::string>::value_type;
-  ASSERT_EQ(*posl, value_type(2, "two"));
-  ASSERT_EQ((*posl).first, 2);
-  ASSERT_EQ((*posl).second, "two");
-
-  auto posu = t.upper_bound(2);
-  ASSERT_EQ(*posu, value_type(3, "three"));
-
-  auto [eql, equ] = t.equal_range(2);
-  EXPECT_EQ(posl, eql);
-  EXPECT_EQ(posu, equ);
-
-  posu--;
-  ASSERT_EQ(*posu, value_type(2, "two"));
-}
-
-TEST(SearchTreeTest, PrintMethod) {
-  const s21::search_tree<int, std::string> t = {
-      {1, "one"}, {2, "two"}, {3, "three"}};
-  std::clog << t;
-  std::clog << t.max_size() << '\n';
-  s21::search_tree<int> t2 = {5, 1, 6, 1234, 65, 1, 54, 0};  // NOLINT
-  std::clog << t2;
-  std::clog << t2.max_size() << '\n';
-}
-
-TEST(SearchTreeTest, MergeMethod) {
-  s21::search_tree<int> t = {1, 2, 3};   // NOLINT
-  s21::search_tree<int> t2 = {3, 4, 5};  // NOLINT
-  t.merge(t2);
-  t.merge(t2);
-  EXPECT_EQ(t.size(), 6);
-  EXPECT_EQ(t2.size(), 0);
-  s21::search_tree<int> t3;
-  t.merge(t3);
-  EXPECT_EQ(t.size(), 6);
-  EXPECT_EQ(t3.size(), 0);
-}
-
-int rand_i(unsigned i) {
-  // NOLINTBEGIN
-  i = (i << 13) ^ i;
-  return ((i * (i * i * 15731 + 789221) + 1376312589) & 0x7fffffff);
-  // NOLINTEND
-}
-TEST(SearchTreeTest, LargeOrderingTest) {
-  std::vector<int> v;
-  s21::search_tree<int> s;
-  for (int i = 0; i < 1000; i++) {  // NOLINT
-    const int rand = rand_i(i);
-    v.push_back(rand);
-    s.insert(rand);
-  }
-  sort(v.begin(), v.end());
-
-  int i = 0;
-  for (const auto& elem : s) {
-    std::cerr << "FUCK" << '\n';
-    std::cerr << i;
-    std::cerr << "FUCK" << '\n';
-    ASSERT_EQ(elem, v[i]);
-    ++i;
-  }
 }

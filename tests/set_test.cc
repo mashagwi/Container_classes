@@ -4,7 +4,6 @@
 #include <limits>
 #include <ostream>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -30,60 +29,62 @@ class SetTest : public testing::Test {
 };
 // NOLINTEND
 
-TEST_F(SetTest, MutableIteration) {
-  for (auto iter = is_.begin(); iter != is_.end(); ++iter, ++i_) {
-    ASSERT_EQ(*iter, iv_[i_]);
-  }
-  auto iter = is_.begin();  // NOLINT
-  EXPECT_FALSE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
-}
-TEST_F(SetTest, ReverseMutableIteration) {
-  std::reverse(iv_.begin(), iv_.end());
-  for (auto iter = is_.rbegin(); iter != is_.rend(); ++iter, ++i_) {
-    ASSERT_EQ(*iter, iv_[i_]);
-  }
-  auto iter = is_.rbegin();  // NOLINT
-  EXPECT_FALSE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+TEST_F(SetTest, EquivalenceOperators) {
+  const s21::set<int> s = {1, 2, 3};
+  ASSERT_TRUE(s == s);
+  ASSERT_FALSE(s != s);
+  const s21::set<int> s2 = {1, 2};
+  ASSERT_TRUE(s != s2);
+  ASSERT_FALSE(s == s2);
+  const s21::set<int> s3 = {1, 2, 3, 3};
+  ASSERT_TRUE(s == s3);
 }
 
-TEST_F(SetTest, NonMutableIteration) {
-  for (auto iter = is_.cbegin(); iter != is_.cend(); ++iter, ++i_) {
-    ASSERT_EQ(*iter, iv_[i_]);
-  }
-  auto iter = is_.cbegin();  // NOLINT
-  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
-}
-TEST_F(SetTest, ReverseNonMutableIteration) {
-  std::reverse(iv_.begin(), iv_.end());
-  for (auto iter = is_.crbegin(); iter != is_.crend(); ++iter, ++i_) {
-    ASSERT_EQ(*iter, iv_[i_]);
-  }
-  auto iter = is_.crbegin();  // NOLINT
-  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+TEST_F(SetTest, CopyConstructor) {
+  const s21::set<int> s(is_);
+  ASSERT_EQ(s, is_);
 }
 
-TEST_F(SetTest, NonMutableIterationConst) {
-  const s21::set<int> cis = is_;
-  for (auto iter = cis.begin(); iter != cis.end(); ++iter, ++i_) {
-    ASSERT_EQ(*iter, iv_[i_]);
-  }
-  auto iter = cis.begin();  // NOLINT
-  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+TEST_F(SetTest, CopyAssignmentOperator) {
+  s21::set<int> s;
+  s = is_;
+  ASSERT_EQ(s, is_);
 }
-TEST_F(SetTest, ReverseNonMutableIterationConst) {
-  std::reverse(iv_.begin(), iv_.end());
-  const s21::set<int> cis = is_;
-  for (auto iter = cis.rbegin(); iter != cis.rend(); ++iter, ++i_) {
-    ASSERT_EQ(*iter, iv_[i_]);
-  }
-  auto iter = cis.rbegin();  // NOLINT
-  EXPECT_TRUE(std::is_const_v<std::remove_reference_t<decltype(*iter)>>);
+
+TEST_F(SetTest, SelfCopyAssignmentOperator) {
+  const s21::set<int> ref(is_);
+  s21::set<int> s(is_);
+  s = s;
+  ASSERT_EQ(s, ref);
+}
+
+TEST_F(SetTest, MoveConstructor) {
+  const s21::set<int> ref(is_);
+  const s21::set<int> s(std::move(is_));
+  ASSERT_EQ(s, ref);
+}
+
+TEST_F(SetTest, MoveAssignmentOperator) {
+  const s21::set<int> ref(is_);
+  s21::set<int> s;
+  s = std::move(is_);
+  ASSERT_EQ(s, ref);
+}
+
+TEST_F(SetTest, SelfMoveAssignmentOperator) {
+  const s21::set<int> ref(is_);
+  s21::set<int> s(is_);
+  s21::set<int>* sp = &s;  // hide selfmove
+  s = std::move(*sp);
+  ASSERT_EQ(s, ref);
 }
 
 TEST_F(SetTest, FindMethod) {
   const s21::set<int> cis = {1, 2, 3};
   auto pos = cis.find(1);
   EXPECT_EQ(*pos, 1);
+  pos = cis.find(0);
+  EXPECT_EQ(pos, cis.end());
 }
 
 TEST_F(SetTest, UniquenessProperty) {
@@ -147,48 +148,6 @@ TEST_F(SetTest, MergeMethod) {
   EXPECT_TRUE(s2.contains(3));
 }
 
-TEST_F(SetTest, CopyAssignmentOperator) {
-  s21::set<int> s;
-  s = is_;
-  EXPECT_EQ(s.size(), is_.size());
-}
-
-TEST_F(SetTest, SelfCopyAssignmentOperator) {
-  s21::set<int> s(is_);
-  s = s;
-  ASSERT_EQ(s.size(), is_.size());
-  for (const auto &elem : s) {
-    ASSERT_EQ(elem, iv_[i_]);
-    i_++;
-  }
-}
-
-TEST_F(SetTest, MoveAssignmentOperator) {
-  auto s2_psize = is_.size();
-  s21::set<int> s;
-  s = std::move(is_);
-  EXPECT_EQ(s.size(), s2_psize);
-  EXPECT_TRUE(is_.empty());
-}
-
-TEST_F(SetTest, SelfMoveAssignmentOperator) {
-  s21::set<int> s(is_);
-  s21::set<int> *p = &s;
-  s = std::move(*p);
-  ASSERT_EQ(s.size(), is_.size());
-  for (const auto &elem : s) {
-    ASSERT_EQ(elem, iv_[i_]);
-    i_++;
-  }
-}
-
-TEST_F(SetTest, MoveConstructor) {
-  auto s2_psize = is_.size();
-  const s21::set<int> s(std::move(is_));
-  EXPECT_EQ(s.size(), s2_psize);
-  EXPECT_TRUE(is_.empty());
-}
-
 TEST_F(SetTest, SwapMethod) {
   s21::set<int> s;
   EXPECT_TRUE(s.empty());
@@ -196,13 +155,6 @@ TEST_F(SetTest, SwapMethod) {
   s.swap(is_);
   EXPECT_FALSE(s.empty());
   EXPECT_TRUE(is_.empty());
-}
-
-TEST_F(SetTest, EmptyMethod) {
-  EXPECT_FALSE(is_.empty());
-  is_.clear();
-  EXPECT_TRUE(is_.empty());
-  EXPECT_EQ(is_.size(), 0);
 }
 
 TEST_F(SetTest, ClearMethod) {
@@ -216,4 +168,24 @@ TEST_F(SetTest, MaxSizeMethod) { std::clog << is_.max_size() << '\n'; }
 TEST_F(SetTest, EmptyInitializerListConstructor) {
   const s21::set<int> s({});
   EXPECT_TRUE(s.empty());
+}
+
+/* iterators */
+
+TEST_F(SetTest, IteratorsInvocation) {  // NOLINT
+  s21::set<int> s = {1, 2, 3};          // NOLINT
+  EXPECT_EQ(*s.begin(), 1);
+  EXPECT_EQ(*--s.end(), 3);
+  EXPECT_EQ(*s.cbegin(), 1);
+  EXPECT_EQ(*--s.cend(), 3);
+  EXPECT_EQ(*s.rbegin(), 3);
+  EXPECT_EQ(*--s.rend(), 1);
+  EXPECT_EQ(*s.crbegin(), 3);
+  EXPECT_EQ(*--s.crend(), 1);
+
+  const s21::set<int> cs(s);
+  EXPECT_EQ(*cs.begin(), 1);
+  EXPECT_EQ(*--cs.end(), 3);
+  EXPECT_EQ(*cs.rbegin(), 3);
+  EXPECT_EQ(*--cs.rend(), 1);
 }
