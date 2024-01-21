@@ -93,8 +93,9 @@ class search_tree {
     delete node, n_--;
   }
 
- public:
   // iterators
+
+ public:
   iterator begin() noexcept {
     if (empty()) return end();
     Node* tmp = root_;
@@ -112,7 +113,23 @@ class search_tree {
   const_iterator cbegin() const noexcept { return begin(); }
   const_iterator cend() const noexcept { return end(); }
 
+  reverse_iterator rbegin() noexcept { return std::reverse_iterator(end()); }
+  reverse_iterator rend() noexcept { return std::reverse_iterator(begin()); }
+  const_reverse_iterator rbegin() const noexcept {
+    return std::reverse_iterator(end());
+  }
+  const_reverse_iterator rend() const noexcept {
+    return std::reverse_iterator(begin());
+  }
+  const_reverse_iterator crbegin() const noexcept {
+    return std::reverse_iterator(cend());
+  }
+  const_reverse_iterator crend() const noexcept {
+    return std::reverse_iterator(cbegin());
+  }
+
   // element access
+
   template <typename = std::enable_if<!std::is_void_v<Value>>>
   std::add_lvalue_reference_t<const mapped_type> at(const Key& key) const {
     auto pos = find(key);

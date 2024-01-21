@@ -23,6 +23,8 @@ class set {
   using iterator = typename tree_type::iterator;
   using const_iterator = typename tree_type::const_iterator;
   using size_type = size_t;
+  using reverse_iterator = typename tree_type::reverse_iterator;
+  using const_reverse_iterator = typename tree_type::const_reverse_iterator;
 
   // special
   set() = default;
@@ -46,6 +48,12 @@ class set {
   const_iterator end() const noexcept { return tree_.end(); }
   const_iterator cbegin() const noexcept { return tree_.cbegin(); }
   const_iterator cend() const noexcept { return tree_.cend(); }
+  reverse_iterator rbegin() noexcept { return tree_.rbegin(); }
+  reverse_iterator rend() noexcept { return tree_.rend(); }
+  const_reverse_iterator rbegin() const noexcept { return tree_.rbegin(); }
+  const_reverse_iterator rend() const noexcept { return tree_.rend(); }
+  const_reverse_iterator crbegin() const noexcept { return tree_.crbegin(); }
+  const_reverse_iterator crend() const noexcept { return tree_.crend(); }
 
   // capacity
   size_type size() const noexcept { return tree_.size(); }
