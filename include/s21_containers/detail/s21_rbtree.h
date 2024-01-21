@@ -44,6 +44,7 @@ class search_tree {
   }
   search_tree(const search_tree& other) noexcept(false) {
     root_ = CopyRecursive(other.root_, nil_, other.nil_);
+    nil_->left_ = root_;
   }
   search_tree& operator=(const search_tree& other) noexcept(false) {
     search_tree(other).swap(*this);
@@ -359,6 +360,7 @@ search_tree<Key, Value, Compare>::insert(const value_type& data) {
   if (root_ == nil_) {
     root_ = new Node(data, Node::Color::black), n_++;
     root_->parent_ = root_->left_ = root_->right_ = nil_;
+    nil_->left_ = root_;
     return iterator(root_);
   }
 
@@ -447,9 +449,10 @@ void search_tree<Key, Value, Compare>::erase(iterator pos) {
 
 template <class Key, class Value, class Compare>
 void search_tree<Key, Value, Compare>::TransplantSubtree(Node* dst, Node* src) {
-  if (dst->parent_ == nil_)
+  if (dst->parent_ == nil_) {
     root_ = src;
-  else if (dst->is_left())
+    nil_->left_ = src;
+  } else if (dst->is_left())
     dst->parent_->left_ = src;
   else
     dst->parent_->right_ = src;
