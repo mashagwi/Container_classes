@@ -153,7 +153,7 @@ class search_tree {
     return const_cast<mapped_type&>(std::as_const(*this).at(key));
   }
   template <typename = std::enable_if<!std::is_void_v<Value>>>
-  std::add_lvalue_reference_t<mapped_type> operator[](const Key& key) noexcept {
+  std::add_lvalue_reference_t<mapped_type> operator[](const Key& key) {
     iterator pos = find(key);
     if (pos == end()) pos = insert(std::pair(key, mapped_type{}));
     return (*pos).second;
