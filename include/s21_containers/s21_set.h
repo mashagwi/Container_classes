@@ -28,7 +28,9 @@ class set {
 
   // special
   set() = default;
-  set(std::initializer_list<value_type> const &items) : tree_(items) {}
+  set(std::initializer_list<value_type> const &items) {
+    for (auto &&elem : items) tree_.insert_if_ne(elem);
+  }
   set(const set &other) : tree_(other.tree_) {}
   set &operator=(const set &other) {
     if (this != &other) tree_.operator=(other.tree_);
