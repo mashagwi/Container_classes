@@ -68,7 +68,7 @@ class set {
   }
   template <class... Args>
   std::vector<std::pair<iterator, bool>> insert_many(Args &&...args) {
-    return tree_.insert_many_if_ne(std::forward<Args>(args)...);
+    return tree_.insert_if_ne_many(std::forward<Args>(args)...);
   }
   void erase(const Key &key) noexcept { tree_.erase(key); }
   void erase(iterator pos) noexcept { tree_.erase(pos); }
