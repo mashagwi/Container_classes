@@ -149,13 +149,14 @@ class search_tree {
   }
 
   // capactiy
+
   bool empty() const noexcept { return n_ == 0; }
   size_type size() const noexcept { return n_; }
   size_type max_size() const noexcept {
     return std::numeric_limits<difference_type>::max() / sizeof(Node);
   }
   void erase(const Key& key) {
-    iterator pos = find(key);
+    auto pos = find(key);
     if (pos != end()) erase(pos);
   }
   void erase(iterator pos);
@@ -163,26 +164,28 @@ class search_tree {
   // modifiers
 
   iterator insert(const value_type& data);
+  // use a dummy template parameter to defer a type trait evaluation
+  template <typename U = Value, typename = std::enable_if<std::is_void_v<U>>>
+  std::pair<iterator, bool> insert_or_assign(const Key& key, const U& obj) {
+    auto pos = find(key);
+    if (pos == end())
+      return {insert(value_type(key, obj)), true};
+    else {
+      (*pos).second = obj;
+      return {pos, false};
+    }
+  }
 
+  template <typename U = Value, typename = std::enable_if<std::is_void_v<U>>>
+  std::pair<iterator, bool> insert_if_ne(const Key& key, const U& obj) {
+    auto pos = find(key);
+    if (pos != end()) return {pos, false};
+    return {insert(value_type(key, obj)), true};
+  }
   std::pair<iterator, bool> insert_if_ne(const value_type& data) {
-    if (contains(get_key(data))) return {end(), false};
+    auto pos = find(get_key(data));
+    if (pos != end()) return {pos, false};
     return {insert(data), true};
-  }
-
-  void merge(search_tree& other) {
-    const search_tree ctree(other);
-    for (const auto& elem : ctree) {
-      auto pos = insert(elem);
-      other.erase(*pos);
-    }
-  }
-
-  void merge_if_ne(search_tree& other) {
-    const search_tree ctree(other);
-    for (const auto& elem : ctree) {
-      auto [pos, res] = insert_if_ne(elem);
-      if (res) other.erase(*pos);
-    }
   }
 
   template <class... Args>
@@ -203,15 +206,64 @@ class search_tree {
     return vec;
   }
 
+  void merge(search_tree& other) {
+    const search_tree ctree(other);
+    for (const auto& elem : ctree) {
+      insert(elem);
+      other.erase(get_key(elem));
+    }
+  }
+
+  void merge_if_ne(search_tree& other) {
+    const search_tree ctree(other);
+    for (const auto& elem : ctree) {
+      auto [pos, res] = insert_if_ne(elem);
+      if (res) other.erase(get_key(elem));
+    }
+  }
+
   // lookup
-  bool contains(const Key& key) const noexcept {
+
+  bool contains(const Key& key) const {
     auto pos = find(key);
     return pos != end();
   }
-  iterator find(const Key& key) noexcept;
-  const_iterator find(const Key& key) const noexcept;
+  size_type count(const Key& key) const {
+    auto iter = find(key);
+    if (iter == end()) return 0;
+    int count = 0;
+    while (keys_equal(key, get_key(*iter))) ++count, ++iter;
+    return count;
+  }
+  iterator find(const Key& key);
+  const_iterator find(const Key& key) const;
+  iterator lower_bound(const Key& key) { return find(key); }
+  iterator upper_bound(const Key& key) {
+    auto iter = lower_bound(key);
+    if (iter == end()) return iter;
+    while (iter != end() && keys_equal(key, get_key(*iter))) ++iter;
+    return iter;
+  }
+  std::pair<iterator, iterator> equal_range(const Key& key) {
+    return {lower_bound(key), upper_bound(key)};
+  }
+
+  // print
+
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const search_tree& t) noexcept {
+    t.print(os);
+    return os;
+  }
+  void print(std::ostream& os) const noexcept {
+    os << "N" << std::endl;
+    if (!empty()) PrintRecursive(os, "", root_, true);
+  }
 
  protected:
+  void PrintRecursive(std::ostream& os, const std::string& prefix, Node* node,
+                      bool is_left) const noexcept;
+
   class Node;
 
  public:
@@ -268,21 +320,14 @@ class search_tree {
     else
       return data.first;
   }
+  static bool keys_equal(const key_type& a, const key_type& b) {
+    key_compare cmp;
+    return !cmp(a, b) && !cmp(a, b);
+  }
   void InsertFixup(Node* node);
   void EraseFixup(Node* node);
   Node* TrinodeRestructure(Node* node);
   void TransplantSubtree(Node* dst, Node* src);
-  void Print(std::ostream& os) const noexcept {
-    os << "N" << std::endl;
-    if (!empty()) PrintRecursive(os, "", root_, true);
-  }
-  void PrintRecursive(std::ostream& os, const std::string& prefix, Node* node,
-                      bool is_left) const noexcept;
-  friend std::ostream& operator<<(std::ostream& os,
-                                  const search_tree& t) noexcept {
-    t.Print(os);
-    return os;
-  }
 
   struct Node {
     friend class search_tree;
@@ -322,13 +367,13 @@ class search_tree {
 
 template <class Key, class Value, class Compare>
 typename search_tree<Key, Value, Compare>::iterator
-search_tree<Key, Value, Compare>::find(const Key& key) noexcept {
+search_tree<Key, Value, Compare>::find(const Key& key) {
   if (root_ == nil_) return end();
   Node* cur = root_;
   key_compare cmp;
   while (cur != nil_) {
     key_type cur_key = get_key(cur->data_);
-    if (key == cur_key) break;
+    if (!cmp(key, cur_key) && !cmp(cur_key, key)) break;
     if (cmp(key, cur_key))
       cur = cur->left_;
     else
@@ -339,13 +384,13 @@ search_tree<Key, Value, Compare>::find(const Key& key) noexcept {
 
 template <class Key, class Value, class Compare>
 typename search_tree<Key, Value, Compare>::const_iterator
-search_tree<Key, Value, Compare>::find(const Key& key) const noexcept {
+search_tree<Key, Value, Compare>::find(const Key& key) const {
   if (root_ == nil_) return end();
   Node* cur = root_;
   key_compare cmp;
   while (cur != nil_) {
     key_type cur_key = get_key(cur->data_);
-    if (key == cur_key) break;
+    if (!cmp(key, cur_key) && !cmp(cur_key, key)) break;
     if (cmp(key, cur_key))
       cur = cur->left_;
     else
