@@ -43,6 +43,14 @@ class set {
   }
   ~set() = default;
 
+  // comparison
+  friend bool operator==(const set &a, const set &b) {
+    return operator==(a.tree_, b.tree_);
+  }
+  friend bool operator!=(const set &a, const set &b) {
+    return operator!=(a.tree_, b.tree_);
+  }
+
   // iterators
   iterator begin() noexcept { return tree_.begin(); }
   iterator end() noexcept { return tree_.end(); }

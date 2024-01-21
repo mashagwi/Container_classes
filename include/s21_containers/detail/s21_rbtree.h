@@ -76,6 +76,17 @@ class search_tree {
   friend void swap(const search_tree& a, const search_tree& b) noexcept {
     a.swap(b);
   }
+  friend bool operator==(const search_tree& a, const search_tree& b) {
+    if (&a == &b) return true;
+    if (a.n_ != b.n_) return false;
+    for (auto ita = a.begin(), itb = b.begin(); ita != a.end(); ++ita, ++itb) {
+      if (*ita != *itb) return false;
+    }
+    return true;
+  }
+  friend bool operator!=(const search_tree& a, const search_tree& b) {
+    return !operator==(a, b);
+  }
 
  protected:
   struct Node;
