@@ -14,6 +14,7 @@
 // explicit template class instantiation for correct code coverage analysis
 template class s21::search_tree<int>;
 template class s21::search_tree<int, std::string>;
+using itree = s21::search_tree<int>;
 
 // NOLINTBEGIN
 class SearchTreeTest : public testing::Test {
@@ -169,6 +170,30 @@ TEST_F(SearchTreeTest, ProperOrderDemonstration) {
   EXPECT_EQ(tree.empty(), true);
 }
 
+TEST_F(SearchTreeTest, EraseAllMethod) {
+  itree t = {1, 1, 1, 4, 4, 3};
+  EXPECT_EQ(t.count(1), 3);
+  t.erase_all(1);
+  EXPECT_EQ(t.count(1), 0);
+}
+
+TEST_F(SearchTreeTest, InsertIfNeMethod) {
+  itree t = {1, 1, 1, 4, 4, 3};
+  EXPECT_EQ(t.count(1), 3);
+  t.insert_if_ne(1);
+  EXPECT_EQ(t.count(1), 3);
+  t.insert_if_ne(2);
+  EXPECT_EQ(t.count(2), 1);
+}
+
+TEST_F(SearchTreeTest, MergeIfNeMethod) {
+  itree t1 = {1, 1, 1, 4, 4, 3};
+  itree t2 = {1, 1, 1, 2, 0, 3};
+  t1.merge_if_ne(t2);
+  EXPECT_EQ(t1.size(), 8);
+  EXPECT_EQ(t2.size(), 4);
+}
+
 TEST_F(SearchTreeTest, AtMethod) {  // NOLINT
   s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
   EXPECT_EQ(t.at(1), "one");
@@ -179,7 +204,7 @@ TEST_F(SearchTreeTest, AtMethod) {  // NOLINT
   ASSERT_THROW(t.at(4), std::out_of_range);  // NOLINT
 }
 
-TEST_F(SearchTreeTest, BracketsOperator) {
+TEST_F(SearchTreeTest, SubscriptOperator) {
   s21::search_tree<int, std::string> t = {{1, "one"}, {2, "two"}, {3, "three"}};
   // NOLINTBEGIN
   EXPECT_EQ(t[1], "one");
@@ -190,6 +215,20 @@ TEST_F(SearchTreeTest, BracketsOperator) {
   t[5] = "five";
   EXPECT_EQ(t[5], "five");
   // NOLINTEND
+}
+
+TEST_F(SearchTreeTest, InsertManyMethod) {
+  itree it = {1, 2, 4};
+  EXPECT_EQ(it.size(), 3);
+  it.insert_many(1, 2, 4, 0, -1);
+  EXPECT_EQ(it.size(), 8);
+}
+
+TEST_F(SearchTreeTest, InsertIfNeManyMethod) {
+  itree it = {1, 2, 4};
+  EXPECT_EQ(it.size(), 3);
+  it.insert_if_ne_many(1, 2, 4, 0, -1);
+  EXPECT_EQ(it.size(), 5);
 }
 
 TEST_F(SearchTreeTest, InsertOrAssignMethod) {
@@ -390,4 +429,57 @@ TEST_F(SearchTreeTest, IteratorDemonstration) {  // NOLINT
   ASSERT_EQ(*riter, 1);
   ++riter;
   ASSERT_EQ(riter, t.rend());
+}
+
+/* special cases */
+
+TEST_F(SearchTreeTest, BeginOnEmptyTree) {
+  itree t;  // NOLINT
+  EXPECT_EQ(t.begin(), t.end());
+  const itree ct;
+  EXPECT_EQ(ct.begin(), ct.end());
+}
+
+TEST_F(SearchTreeTest, FindOnEmptyTree) {
+  const itree t;
+  EXPECT_EQ(t.find(1), t.end());
+}
+
+TEST_F(SearchTreeTest, PrintOnEmptyTree) {
+  const itree t;
+  std::clog << t << '\n';
+  EXPECT_TRUE(t.empty());
+}
+
+TEST_F(SearchTreeTest, BoundsOnEmptyTree) {
+  itree t;
+  auto lb = t.lower_bound(1);
+  auto ub = t.upper_bound(1);
+  auto er = t.equal_range(1);
+  ASSERT_EQ(lb, t.end());
+  ASSERT_EQ(ub, t.end());
+  ASSERT_EQ(er.first, t.end());
+  ASSERT_EQ(er.second, t.end());
+}
+
+TEST_F(SearchTreeTest, BoundsOnSingleEntry) {
+  itree t = {1};
+  auto lb = t.lower_bound(1);
+  auto ub = t.upper_bound(1);
+  auto er = t.equal_range(1);
+  ASSERT_EQ(lb, er.first);
+  ASSERT_EQ(lb, t.begin());
+  ASSERT_EQ(ub, er.second);
+  ASSERT_EQ(ub, t.end());
+  ASSERT_EQ(*lb, 1);
+}
+
+TEST_F(SearchTreeTest, CountOnEmptyTree) {
+  const itree t;
+  EXPECT_EQ(t.count(1), 0);
+}
+
+TEST_F(SearchTreeTest, ContainsOnEmptyTree) {
+  const itree t;
+  EXPECT_EQ(t.contains(1), false);
 }
