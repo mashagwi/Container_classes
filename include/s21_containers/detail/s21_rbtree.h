@@ -503,7 +503,10 @@ void search_tree<Key, Value, Compare>::erase(iterator pos) {
   }
 
   delete u, n_--;
-  if (oc == Node::Color::black) EraseFixup(r);
+  if (r == root_ || r->is_red() || oc == Node::Color::red)
+    r->set_black();
+  else
+    EraseFixup(r);
 }
 
 template <class Key, class Value, class Compare>
@@ -556,8 +559,9 @@ typename search_tree<K, V, C>::Node* search_tree<K, V, C>::TrinodeRestructure(
   Node* p = n->parent();
   Node* g = n->grandparent();
 
-  Node *a, *b, *c;          // inorder naming of n, p, g
-  Node *t1, *t2, *t3, *t4;  // inorder naming of subtrees not rooted at n, p, g
+  Node *a, *b, *c;  // inorder naming of n, p, g
+  Node *t1, *t2, *t3,
+      *t4;  // inorder naming of subtrees not rooted at n, p, g
   if (g->right_ == p && p->right_ == n)
     a = g, b = p, c = n, t2 = b->left_, t3 = c->left_;
   if (g->right_ == p && p->left_ == n)
