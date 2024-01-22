@@ -38,7 +38,8 @@ LINTFLAGS := --style=google
 lint:     LINTFLAGS += -n
 lint_fix: LINTFLAGS += -i
 lint lint_fix:
-	clang-format ${LINTFLAGS} $(shell find include -type f -name '*.h')
+	clang-format ${LINTFLAGS} $(shell find tests include -type f -name '*.h' \
+	                                                         -or -name '*.cc')
 .PHONY: lint lint_fix
 
 clean:
