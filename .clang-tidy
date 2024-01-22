@@ -30,6 +30,7 @@ Checks: >
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-init-variables,
   -cppcoreguidelines-avoid-non-const-global-variables,
-  -cppcoreguidelines-avoid-do-while
+  -cppcoreguidelines-avoid-do-while,
+  -performance-avoid-endl,
 HeaderFilterRegex: '^s21.*'
 ...
