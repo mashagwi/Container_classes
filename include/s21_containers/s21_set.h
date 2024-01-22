@@ -68,7 +68,7 @@ class set {
   // capacity
   size_type size() const noexcept { return tree_.size(); }
   size_type max_size() const noexcept { return tree_.max_size(); }
-  bool empty() const noexcept { return tree_.empty(); }
+  [[nodiscard]] bool empty() const noexcept { return tree_.empty(); }
 
   // modifiers
   std::pair<iterator, bool> insert(const value_type &value) {

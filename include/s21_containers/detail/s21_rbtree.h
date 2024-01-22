@@ -93,7 +93,7 @@ class search_tree {
 
  protected:
   struct Node;
-  Node* CopyRecursive(Node* node, Node* parent, Node* other_nil) {
+  [[nodiscard]] Node* CopyRecursive(Node* node, Node* parent, Node* other_nil) {
     if (node == other_nil) return nil_;
     Node* new_node = new Node(node->data_, node->color_, parent);
     new_node->left_ = CopyRecursive(node->left_, new_node, other_nil);
@@ -165,7 +165,7 @@ class search_tree {
 
   // capactiy
 
-  bool empty() const noexcept { return n_ == 0; }
+  [[nodiscard]] bool empty() const noexcept { return n_ == 0; }
   size_type size() const noexcept { return n_; }
   size_type max_size() const noexcept {
     return std::numeric_limits<difference_type>::max() / sizeof(Node);
