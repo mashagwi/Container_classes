@@ -22,6 +22,9 @@ build release debug: configure
 test:
 	cmake --build $(BUILD_DIR) --target check
 .PHONY: test
+retest:
+	cmake --build $(BUILD_DIR) --target test
+.PHONY: retest
 
 memcheck:
 	cmake --build $(BUILD_DIR) --target memcheck
