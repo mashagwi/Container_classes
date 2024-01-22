@@ -38,22 +38,24 @@ class search_tree {
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   // special
-  search_tree() noexcept(false) = default;
-  search_tree(std::initializer_list<value_type> const& items) noexcept(false) {
+  search_tree() noexcept(false)
+      : nil_(new Node(value_type{}, Node::Color::black)), root_(nil_) {}
+  search_tree(std::initializer_list<value_type> const& items) noexcept(false)
+      : nil_(new Node(value_type{}, Node::Color::black)), root_(nil_) {
     for (auto&& elem : items) insert(elem);
   }
-  search_tree(const search_tree& other) noexcept(false) {
+  search_tree(const search_tree& other) noexcept(false)
+      : nil_(new Node(value_type{}, Node::Color::black)) {
     root_ = CopyRecursive(other.root_, nil_, other.nil_);
     nil_->left_ = root_;
   }
+  search_tree(search_tree&& other) noexcept
+      : nil_(std::exchange(other.nil_, nullptr)),
+        root_(std::exchange(other.root_, nullptr)),
+        n_(std::exchange(other.n_, 0)) {}
   search_tree& operator=(const search_tree& other) noexcept(false) {
     search_tree(other).swap(*this);
     return *this;
-  }
-  search_tree(search_tree&& other) noexcept {
-    root_ = std::exchange(other.root_, nullptr);
-    nil_ = std::exchange(other.nil_, nullptr);
-    n_ = std::exchange(other.n_, 0);
   }
   search_tree& operator=(search_tree&& other) noexcept {
     search_tree(std::move(other)).swap(*this);
@@ -389,8 +391,8 @@ class search_tree {
   };
 
  private:
-  Node* nil_ = new Node(value_type{}, Node::Color::black);  // sentinel node
-  Node* root_ = nil_;
+  Node* nil_;  // sentinel node
+  Node* root_;
   size_type n_ = 0;  // true nodes (hold data provided by user)
 };
 
