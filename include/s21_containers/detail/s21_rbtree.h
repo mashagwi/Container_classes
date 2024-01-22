@@ -114,13 +114,13 @@ class search_tree {
   iterator begin() noexcept {
     if (empty()) return end();
     Node* tmp = root_;
-    while (tmp->left_->is_internal()) tmp = tmp->left_;
+    while (tmp->left_ != nil_) tmp = tmp->left_;
     return iterator(tmp);
   }
   const_iterator begin() const noexcept {
     if (empty()) return end();
     Node* tmp = root_;
-    while (tmp->left_->is_internal()) tmp = tmp->left_;
+    while (tmp->left_ != nil_) tmp = tmp->left_;
     return const_iterator(tmp);
   }
   iterator end() noexcept { return iterator(nil_); }
