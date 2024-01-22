@@ -271,39 +271,39 @@ int rand_i(unsigned i) {
 TEST_F(SearchTreeTest, LargeOrderingTest) {
   std::vector<int> v;
   s21::search_tree<int> s;
-  for (int i = 0; i < 10; i++) {  // NOLINT
+  const int n = 1000;
+  for (int i = 0; i < n; i++) {  // NOLINT
     const int rand = rand_i(i);
     v.push_back(rand);
     s.insert(rand);
   }
-  sort(v.begin(), v.end());
 
   // proper order after insertion
+  sort(v.begin(), v.end());
   int i = 0;
   for (const auto& elem : s) {
     ASSERT_EQ(elem, v[i]);
     ++i;
   }
 
-  // // shuffle vector to remove elements in a random order
-  // auto rd = std::random_device{};
-  // auto rng = std::default_random_engine{rd()};
-  // std::shuffle(std::begin(v), std::end(v), rng);
+  // shuffle vector to remove elements in a random order
+  auto rd = std::random_device{};
+  auto rng = std::default_random_engine{rd()};
+  std::shuffle(std::begin(v), std::end(v), rng);
 
-  // for (int i = 0; i < 10; i++) {  // NOLINT
-  //   std::cerr << i << ":" << v.back() << std::endl;
-  //   int rem = v.back();
-  //   v.pop_back();
-  //   s.erase(rem);
-  // }
+  for (int i = 0; i < n * 0.7; i++) {  // NOLINT
+    const int rem = v.back();
+    v.pop_back();
+    s.erase(rem);
+  }
 
-  // sort(v.begin(), v.end());
-  // // proper order after removing
-  // i = 0;
-  // for (const auto& elem : s) {
-  //   ASSERT_EQ(elem, v[i]);
-  //   ++i;
-  // }
+  // proper order after removing
+  sort(v.begin(), v.end());
+  i = 0;
+  for (const auto& elem : s) {
+    ASSERT_EQ(elem, v[i]);
+    ++i;
+  }
 }
 
 /* iterators */
