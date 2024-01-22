@@ -349,7 +349,7 @@ class search_tree {
   }
   static bool keys_equal(const key_type& a, const key_type& b) {
     key_compare cmp;
-    return !cmp(a, b) && !cmp(a, b);
+    return !cmp(a, b) && !cmp(b, a);
   }
   void InsertFixup(Node* node);
   void EraseFixup(Node* node);
