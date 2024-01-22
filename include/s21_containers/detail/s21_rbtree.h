@@ -245,16 +245,29 @@ class search_tree {
   size_type count(const Key& key) const {
     auto iter = find(key);
     if (iter == end()) return 0;
-    int count = 0;
-    while (keys_equal(key, get_key(*iter))) ++count, ++iter;
+    if (iter == begin()) return 1;
+
+    int count = 1;
+    auto biter = iter;  // backward
+    auto fiter = iter;  // forward
+    while (biter != begin() && keys_equal(key, get_key(*--iter)))
+      ++count, --biter;
+    ++fiter;
+    while (fiter != end() && keys_equal(key, get_key(*fiter))) ++count, ++fiter;
+
     return count;
   }
   iterator find(const Key& key);
   const_iterator find(const Key& key) const;
-  iterator lower_bound(const Key& key) { return find(key); }
+  iterator lower_bound(const Key& key) {
+    auto iter = find(key);
+    if (iter == end()) return iter;
+    auto biter = iter;
+    while (iter != begin() && keys_equal(key, get_key(*--biter))) --iter;
+    return iter;
+  }
   iterator upper_bound(const Key& key) {
     auto iter = lower_bound(key);
-    if (iter == end()) return iter;
     while (iter != end() && keys_equal(key, get_key(*iter))) ++iter;
     return iter;
   }
