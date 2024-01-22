@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -185,12 +186,9 @@ class search_tree {
   template <typename U = Value, typename = std::enable_if<std::is_void_v<U>>>
   std::pair<iterator, bool> insert_or_assign(const Key& key, const U& obj) {
     auto pos = find(key);
-    if (pos == end())
-      return {insert(value_type(key, obj)), true};
-    else {
-      (*pos).second = obj;
-      return {pos, false};
-    }
+    if (pos == end()) return {insert(value_type(key, obj)), true};
+    (*pos).second = obj;
+    return {pos, false};
   }
 
   template <typename U = Value, typename = std::enable_if<std::is_void_v<U>>>
@@ -294,8 +292,6 @@ class search_tree {
   void PrintRecursive(std::ostream& os, const std::string& prefix, Node* node,
                       bool is_left) const noexcept;
 
-  class Node;
-
  public:
   template <bool is_const>
   class Iterator {
@@ -332,7 +328,7 @@ class search_tree {
     bool operator!=(const Iterator<R>& rhs) const noexcept {
       return ptr_ != rhs.ptr_;
     }
-    operator Iterator<true>() const noexcept {  // allow implicit conversion
+    operator Iterator<true>() const noexcept {  // NOLINT; allow implicit conv
       return Iterator<true>(ptr_);
     }
 
@@ -366,10 +362,9 @@ class search_tree {
     explicit Node(const value_type& v, Color c) : data_(v), color_(c) {}
     explicit Node(const value_type& v, Color c, Node* p)
         : data_(v), color_(c), parent_(p) {}
-    ~Node() noexcept(false) = default;
 
     bool is_internal() const noexcept { return right_; }
-    bool is_external() const noexcept { return !right_; }
+    // bool is_external() const noexcept { return !right_; }
     bool is_left() const noexcept { return parent_->left_ == this; }
     bool is_right() const noexcept { return parent_->right_ == this; }
     Node* sibling() const noexcept {
@@ -383,6 +378,7 @@ class search_tree {
     void set_red() noexcept { color_ = Color::red; }
     void set_color(Color col) noexcept { color_ = col; }
 
+   private:
     value_type data_;
     Color color_;
     Node* parent_ = nullptr;
