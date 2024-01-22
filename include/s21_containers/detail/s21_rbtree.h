@@ -38,8 +38,8 @@ class search_tree {
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   // special
-  search_tree() = default;
-  search_tree(std::initializer_list<value_type> const& items) {
+  search_tree() noexcept(false) = default;
+  search_tree(std::initializer_list<value_type> const& items) noexcept(false) {
     for (auto&& elem : items) insert(elem);
   }
   search_tree(const search_tree& other) noexcept(false) {
@@ -59,7 +59,7 @@ class search_tree {
     search_tree(std::move(other)).swap(*this);
     return *this;
   }
-  ~search_tree() {
+  ~search_tree() noexcept {
     if (!empty()) clear();
     delete nil_;
   }
@@ -102,7 +102,8 @@ class search_tree {
     if (!node || node == nil_) return;
     DestroyRecursive(node->left_);
     DestroyRecursive(node->right_);
-    delete node, n_--;
+    n_--;
+    delete node;
   }
 
   // iterators
@@ -341,20 +342,20 @@ class search_tree {
   };
 
  protected:
-  static key_type get_key(const value_type& data) {
+  static key_type get_key(const value_type& data) noexcept {
     if constexpr (std::is_void_v<Value>)
       return data;
     else
       return data.first;
   }
-  static bool keys_equal(const key_type& a, const key_type& b) {
+  static bool keys_equal(const key_type& a, const key_type& b) noexcept(false) {
     key_compare cmp;
     return !cmp(a, b) && !cmp(b, a);
   }
-  void InsertFixup(Node* node);
-  void EraseFixup(Node* node);
-  Node* TrinodeRestructure(Node* node);
-  void TransplantSubtree(Node* dst, Node* src);
+  void InsertFixup(Node* node) noexcept;
+  void EraseFixup(Node* node) noexcept;
+  Node* TrinodeRestructure(Node* node) noexcept;
+  void TransplantSubtree(Node* dst, Node* src) noexcept;
 
   struct Node {
     friend class search_tree;
@@ -363,8 +364,9 @@ class search_tree {
     explicit Node(const value_type& v, Color c) : data_(v), color_(c) {}
     explicit Node(const value_type& v, Color c, Node* p)
         : data_(v), color_(c), parent_(p) {}
+    ~Node() noexcept(false) = default;
 
-    bool is_internal() const noexcept { return left_ && right_; }
+    bool is_internal() const noexcept { return right_; }
     bool is_external() const noexcept { return !right_; }
     bool is_left() const noexcept { return parent_->left_ == this; }
     bool is_right() const noexcept { return parent_->right_ == this; }
@@ -464,7 +466,7 @@ search_tree<Key, Value, Compare>::insert(const value_type& data) {
 }
 
 template <class K, class V, class C>
-void search_tree<K, V, C>::InsertFixup(Node* node) {
+void search_tree<K, V, C>::InsertFixup(Node* node) noexcept {
   Node* p = node->parent_;
   if (p == root_ || p->is_black()) return;
   if (p->sibling()->is_black()) {
@@ -523,7 +525,8 @@ void search_tree<Key, Value, Compare>::erase(iterator pos) {
 }
 
 template <class Key, class Value, class Compare>
-void search_tree<Key, Value, Compare>::TransplantSubtree(Node* dst, Node* src) {
+void search_tree<Key, Value, Compare>::TransplantSubtree(Node* dst,
+                                                         Node* src) noexcept {
   if (dst->parent_ == nil_) {
     root_ = src;
     nil_->left_ = src;
@@ -535,8 +538,7 @@ void search_tree<Key, Value, Compare>::TransplantSubtree(Node* dst, Node* src) {
 }
 
 template <class Key, class Value, class Compare>
-void search_tree<Key, Value, Compare>::EraseFixup(Node* node) {
-  if (node == root_) return;
+void search_tree<Key, Value, Compare>::EraseFixup(Node* node) noexcept {
   Node* u = node;
   Node* p = u->parent();
   Node* s = u->sibling();  // sibling
@@ -567,7 +569,7 @@ void search_tree<Key, Value, Compare>::EraseFixup(Node* node) {
 
 template <class K, class V, class C>
 typename search_tree<K, V, C>::Node* search_tree<K, V, C>::TrinodeRestructure(
-    Node* node) {
+    Node* node) noexcept {
   Node* n = node;
   Node* p = n->parent();
   Node* g = n->grandparent();
@@ -603,8 +605,6 @@ template <class Key, class Value, class Compare>
 void search_tree<Key, Value, Compare>::PrintRecursive(
     std::ostream& os, const std::string& prefix, Node* node,
     bool is_left) const noexcept {
-  if (!node) return;
-
   os << prefix;
   os << (is_left ? "├──" : "└──");
 
