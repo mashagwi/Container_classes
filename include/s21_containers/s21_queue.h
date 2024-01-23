@@ -22,6 +22,11 @@ class queue {
 
   queue(queue &&other) noexcept : c(std::move(other.c)) {}
 
+  queue &operator=(const queue &other) {
+    c = other.c;
+    return *this;
+  }
+
   queue &operator=(queue &&other) noexcept {
     c = std::move(other.c);
     return *this;

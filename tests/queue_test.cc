@@ -103,7 +103,42 @@ TEST(QueueCtor, Move3) {
   EXPECT_EQ(l2.back(), b);
 }
 
-TEST(QueueAssignment, Assign1) {
+TEST(QueueAssignment, CopyAssign1) {
+  const int sz = 0;
+  s21::queue<int> l1;
+  s21::queue<int> l2;
+  l2 = l1;
+  EXPECT_TRUE(l1.empty());
+  EXPECT_TRUE(l2.empty());
+  EXPECT_EQ(sz, l1.size());
+  EXPECT_EQ(sz, l2.size());
+}
+
+TEST(QueueAssignment, CopyAssign2) {
+  const int sz = 1;
+  const int f = 10;
+  s21::queue<int> l1{f};
+  s21::queue<int> l2;
+  l2 = l1;
+  l1.push(100);
+  EXPECT_EQ(2, l1.size());
+  EXPECT_EQ(sz, l2.size());
+  EXPECT_EQ(l2.front(), f);
+}
+
+TEST(QueueAsssignment, CopyAssign3) {
+  const int sz = 3;
+  const int f = 1, b = 3;
+  s21::queue<int> l1{1, 2, 3};
+  s21::queue<int> l2;
+  l2 = l1;
+  l1.pop();
+  EXPECT_EQ(sz, l2.size());
+  EXPECT_EQ(2, l1.size());
+  EXPECT_EQ(l2.front(), f);
+  EXPECT_EQ(l2.back(), b);
+}
+TEST(QueueAssignment, MoveAssign1) {
   const int sz = 0;
   s21::queue<int> l1;
   s21::queue<int> l2;
@@ -114,7 +149,7 @@ TEST(QueueAssignment, Assign1) {
   EXPECT_EQ(sz, l2.size());
 }
 
-TEST(QueueAssignment, Assign2) {
+TEST(QueueAssignment, MoveAssign2) {
   const int sz = 1;
   const int f = 10;
   s21::queue<int> l1{f};
@@ -127,7 +162,7 @@ TEST(QueueAssignment, Assign2) {
   EXPECT_EQ(l2.front(), f);
 }
 
-TEST(QueueAsssignment, Assign3) {
+TEST(QueueAsssignment, MoveAssign3) {
   const int sz = 3;
   const int f = 1, b = 3;
   s21::queue<int> l1{1, 2, 3};

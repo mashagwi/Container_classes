@@ -67,7 +67,7 @@ class list {
 
    private:
     friend class list<value_type>;
-    friend class ListConstIterator;
+    friend struct ListConstIterator;
     Node *ptr;
   };
 
@@ -100,6 +100,14 @@ class list {
       : head(other.head), tail(other.tail), size_(other.size_) {
     other.head = other.tail = nullptr;
     other.size_ = 0;
+  }
+
+  list &operator=(const list &other) {
+    if (this != &other) {
+      clear();
+      for (const auto &e : other) push_back(e);
+    }
+    return *this;
   }
 
   list &operator=(list &&other) noexcept {
@@ -268,7 +276,7 @@ class list {
  private:
   struct Node {
     Node() = default;
-    Node(const_reference value) : data(value) {}
+    explicit Node(const_reference value) : data(value) {}
 
     Node *next{nullptr};
     Node *prev{nullptr};

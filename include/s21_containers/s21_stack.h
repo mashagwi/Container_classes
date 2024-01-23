@@ -22,6 +22,11 @@ class stack {
 
   stack(stack &&other) noexcept : c(std::move(other.c)) {}
 
+  stack &operator=(const stack &other) {
+    c = other.c;
+    return *this;
+  }
+
   stack &operator=(stack &&other) noexcept {
     c = std::move(other.c);
     return *this;

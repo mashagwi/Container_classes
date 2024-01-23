@@ -124,7 +124,43 @@ TEST(ListCtor, Move3) {
   EXPECT_EQ(l2.back(), b);
 }
 
-TEST(ListAssignment, Assign1) {
+TEST(ListAssignment, CopyAssign1) {
+  const int sz = 0;
+  s21::list<int> l1;
+  s21::list<int> l2;
+  l2 = l1;
+  EXPECT_TRUE(l1.empty());
+  EXPECT_TRUE(l2.empty());
+  EXPECT_EQ(sz, l1.size());
+  EXPECT_EQ(sz, l2.size());
+}
+
+TEST(ListAssignment, CopyAssign2) {
+  const int sz = 1;
+  const int f = 10;
+  s21::list<int> l1{f};
+  s21::list<int> l2;
+  l2 = l1;
+  l1.push_back(100);
+  EXPECT_EQ(sz, l2.size());
+  EXPECT_EQ(2, l1.size());
+  EXPECT_EQ(l2.front(), f);
+}
+
+TEST(ListAsssignment, CopyAssign3) {
+  const int sz = 3;
+  const int f = 1, b = 3;
+  s21::list<int> l1{1, 2, 3};
+  s21::list<int> l2;
+  l2 = l1;
+  l1.erase(l1.begin());
+  EXPECT_EQ(sz, l2.size());
+  EXPECT_EQ(2, l1.size());
+  EXPECT_EQ(l2.front(), f);
+  EXPECT_EQ(l2.back(), b);
+}
+
+TEST(ListAssignment, MoveAssign1) {
   const int sz = 0;
   s21::list<int> l1;
   s21::list<int> l2;
@@ -135,7 +171,7 @@ TEST(ListAssignment, Assign1) {
   EXPECT_EQ(sz, l2.size());
 }
 
-TEST(ListAssignment, Assign2) {
+TEST(ListAssignment, MoveAssign2) {
   const int sz = 1;
   const int f = 10;
   s21::list<int> l1{f};
@@ -148,7 +184,7 @@ TEST(ListAssignment, Assign2) {
   EXPECT_EQ(l2.front(), f);
 }
 
-TEST(ListAsssignment, Assign3) {
+TEST(ListAsssignment, MoveAssign3) {
   const int sz = 3;
   const int f = 1, b = 3;
   s21::list<int> l1{1, 2, 3};

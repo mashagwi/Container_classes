@@ -100,7 +100,42 @@ TEST(StackCtor, Move3) {
   EXPECT_EQ(l2.top(), t);
 }
 
-TEST(StackAssignment, Assign1) {
+TEST(StackAssignment, CopyAssign1) {
+  const int sz = 0;
+  s21::stack<int> l1;
+  s21::stack<int> l2;
+  l2 = l1;
+  EXPECT_TRUE(l1.empty());
+  EXPECT_TRUE(l2.empty());
+  EXPECT_EQ(sz, l1.size());
+  EXPECT_EQ(sz, l2.size());
+}
+
+TEST(StackAssignment, CopyAssign2) {
+  const int sz = 1;
+  const int f = 10;
+  s21::stack<int> l1{f};
+  s21::stack<int> l2;
+  l2 = l1;
+  l1.push(100);
+  EXPECT_EQ(2, l1.size());
+  EXPECT_EQ(sz, l2.size());
+  EXPECT_EQ(l2.top(), f);
+}
+
+TEST(StackAsssignment, CopyAssign3) {
+  const int sz = 3;
+  const int t = 3;
+  s21::stack<int> l1{1, 2, 3};
+  s21::stack<int> l2;
+  l2 = l1;
+  l1.pop();
+  EXPECT_EQ(sz, l2.size());
+  EXPECT_EQ(2, l1.size());
+  EXPECT_EQ(l2.top(), t);
+}
+
+TEST(StackAssignment, MoveAssign1) {
   const int sz = 0;
   s21::stack<int> l1;
   s21::stack<int> l2;
@@ -111,7 +146,7 @@ TEST(StackAssignment, Assign1) {
   EXPECT_EQ(sz, l2.size());
 }
 
-TEST(StackAssignment, Assign2) {
+TEST(StackAssignment, MoveAssign2) {
   const int sz = 1;
   const int f = 10;
   s21::stack<int> l1{f};
@@ -124,7 +159,7 @@ TEST(StackAssignment, Assign2) {
   EXPECT_EQ(l2.top(), f);
 }
 
-TEST(StackAsssignment, Assign3) {
+TEST(StackAsssignment, MoveAssign3) {
   const int sz = 3;
   const int t = 3;
   s21::stack<int> l1{1, 2, 3};
